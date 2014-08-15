@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 using Bukimedia.PrestaSharp.Entities;
 
-using Supplier2Presta.Entities;
+using Supplier2Presta.Service.Entities;
 
-namespace Supplier2Presta.Helpers
+namespace Supplier2Presta.Service.Helpers
 {
     internal static class ProductsMapper
     {

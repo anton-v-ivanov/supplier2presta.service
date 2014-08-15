@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Supplier2Presta.Entities
+namespace Supplier2Presta.Service.Entities
 {
     public class PriceItem
     {
@@ -63,39 +63,39 @@ namespace Supplier2Presta.Entities
             get
             {
                 var features = string.Empty;
-                if (!string.IsNullOrWhiteSpace(Size))
+                if (!string.IsNullOrWhiteSpace(this.Size))
                 {
-                    features += string.Format("{0}|", Size);
+                    features += string.Format("{0}|", this.Size);
                 }
 
-                if (!string.IsNullOrWhiteSpace(Color))
+                if (!string.IsNullOrWhiteSpace(this.Color))
                 {
-                    features += string.Format("{0}|", Color);
+                    features += string.Format("{0}|", this.Color);
                 }
 
-                if (!string.IsNullOrWhiteSpace(Material))
+                if (!string.IsNullOrWhiteSpace(this.Material))
                 {
-                    features += string.Format("{0}|", Material);
+                    features += string.Format("{0}|", this.Material);
                 }
 
-                if (!string.IsNullOrWhiteSpace(Country))
+                if (!string.IsNullOrWhiteSpace(this.Country))
                 {
-                    features += string.Format("{0}|", Country);
+                    features += string.Format("{0}|", this.Country);
                 }
 
-                if (!string.IsNullOrWhiteSpace(Packing))
+                if (!string.IsNullOrWhiteSpace(this.Packing))
                 {
-                    features += string.Format("{0}|", Packing);
+                    features += string.Format("{0}|", this.Packing);
                 }
 
-                if (!string.IsNullOrWhiteSpace(Length))
+                if (!string.IsNullOrWhiteSpace(this.Length))
                 {
-                    features += string.Format("{0}|", Length);
+                    features += string.Format("{0}|", this.Length);
                 }
 
-                if (!string.IsNullOrWhiteSpace(Diameter))
+                if (!string.IsNullOrWhiteSpace(this.Diameter))
                 {
-                    features += string.Format("{0}", Diameter);
+                    features += string.Format("{0}", this.Diameter);
                 }
 
                 return features;

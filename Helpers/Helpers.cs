@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using Supplier2Presta.Entities;
-
-namespace Supplier2Presta.Helpers
+namespace Supplier2Presta.Service.Helpers
 {
     internal class Helper
     {
         private static readonly Regex Reference = new Regex(@"/\s*", RegexOptions.Compiled);
-        //private static readonly Regex Parameters = new Regex(@"([Мм]атериал:\s?(\w+))|(Цвет[:\s-–]+(\w+-?\w+))|([Дд]лина[:\s-–]+(\d+,?.?\s?[\d+]?\s?\w+))|([Дд]иаметр[:\s-–]+(\d+,?.?\s?[\d+]?\s?\w+))|([Уу]паковка[:\s-–]+(\w+))", RegexOptions.Compiled);
         
         private static readonly Regex Parameters = new Regex(@"(Материал:\s?([A-Za-z\s]+\s?[A-Za-z\s]*))|(Цвет[:\s-–]+(\w+-?\w+))|([Дд]лина[:\s-–]+(\d+,?.?\s?[\d+]?\s?[смСМммММ]+))|([Дд]иаметр[:\s-–]+(\d+,?.?\s?[\d+]?\s?[смСМммММ]+))|([Уу]паковка[:\s-–]+([\w\s]+))", RegexOptions.Compiled);
         private static readonly Regex PunctuationRegex = new Regex("[\\w`\"](\\s+([.,!;:?]))", RegexOptions.Compiled);
@@ -29,41 +26,6 @@ namespace Supplier2Presta.Helpers
             }
 
             return name;
-        }
-
-        internal static string NormalizeName(string name)
-        {
-            return RemoveSupplierReference(name).Replace(";", "").Replace("#", "№").FirstLetterToUpper();
-        }
-
-        internal static string ReplaceShortenings(string name, Dictionary<string, string> shortenings)
-        {
-            return shortenings.Aggregate(name, (current, shortening) => current.Replace(shortening.Key, shortening.Value));
-        }
-
-        internal static string GenerateProperty(string name, Match value, Dictionary<string, string> parameters)
-        {
-            // (Наименование:Значение:Позиция:Настроено)
-            var propValue = value.Value.Trim(new[] { '"', ';' }).FirstLetterToUpper().CapitalizeEnglish();
-            if (string.IsNullOrWhiteSpace(propValue))
-            {
-                if(parameters.ContainsKey(name))
-                {
-                    return string.Format("{0}:{1}:0:0", name, parameters[name].FirstLetterToUpper());
-                }
-
-                return string.Empty;
-            }
-
-            return string.Format("{0}:{1}:0:1", name, propValue);
-        }
-
-        internal static Dictionary<string, string> GetShortenings(IEnumerable<string> lines)
-        {
-            return lines
-                .Select(line => line.Split(new[] { " - " }, StringSplitOptions.RemoveEmptyEntries))
-                .Where(splits => splits.Count() > 1)
-                .ToDictionary(splits => splits[0], splits => splits[1]);
         }
 
         internal static Dictionary<string, string> ParseDescription(string desc, out string description)
@@ -136,24 +98,6 @@ namespace Supplier2Presta.Helpers
                 .Aggregate(description, (current, match) => current.Replace(match.Value, " "));
 
             return result;
-        }
-
-        internal static string GetFileName(GeneratedPriceType generatedPriceType)
-        {
-            switch (generatedPriceType)
-            {
-                case GeneratedPriceType.NewItems:
-                    return "\\new_products_{0}.csv";
-
-                case GeneratedPriceType.DeletedItems:
-                    return "\\deleted_products_{0}.csv";
-
-                case GeneratedPriceType.SameItems:
-                    return "\\same_products_{0}.csv";
-
-                default:
-                    throw new ArgumentOutOfRangeException("generatedPriceType");
-            }
         }
     }
 }

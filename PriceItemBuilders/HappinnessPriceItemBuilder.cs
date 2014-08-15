@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-using Supplier2Presta.Entities;
-using Supplier2Presta.Helpers;
+using Supplier2Presta.Service.Entities;
+using Supplier2Presta.Service.Helpers;
 
-namespace Supplier2Presta.PriceItemBuilders
+namespace Supplier2Presta.Service.PriceItemBuilders
 {
     public class HappinessPriceItemBuilder : PriceItemBuilderBase, IPriceItemBuilder
     {
         private static readonly Regex LineRegex = new Regex(@"(""[^""]+"";)|(\d+ ?\d*;)|("""";)|([\w./:-]*;)|(""[^""]+""\r?)|(""""\r?)", RegexOptions.Compiled);
 
-        public HappinessPriceItemBuilder(PriceFormat priceFormat, float? multiplicator, bool generateProperties)
-            : base(priceFormat, multiplicator, generateProperties)
+        public HappinessPriceItemBuilder(PriceFormat priceFormat, float? multiplicator)
+            : base(priceFormat, multiplicator)
         {
         }
 

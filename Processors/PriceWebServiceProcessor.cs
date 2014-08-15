@@ -7,11 +7,11 @@ using System.Net;
 using Bukimedia.PrestaSharp.Entities;
 using Bukimedia.PrestaSharp.Factories;
 
-using Supplier2Presta.Diffs;
-using Supplier2Presta.Entities;
-using Supplier2Presta.Helpers;
+using Supplier2Presta.Service.Diffs;
+using Supplier2Presta.Service.Entities;
+using Supplier2Presta.Service.Helpers;
 
-namespace Supplier2Presta.Processors
+namespace Supplier2Presta.Service.Processors
 {
     public class PriceWebServiceProcessor : IProcessor
     {
@@ -46,16 +46,16 @@ namespace Supplier2Presta.Processors
 
         public Tuple<int, int, int> Process(Diff diff)
         {
-            if (OnProductProcessed != null)
+            if (this.OnProductProcessed != null)
             {
-                OnProductProcessed("Подключение к API", GeneratedPriceType.None);
+                this.OnProductProcessed("Подключение к API", GeneratedPriceType.None);
             }
 
-            InitFactories();
+            this.InitFactories();
             
-            ProcessDiff(diff.NewItems, GeneratedPriceType.NewItems);
-            ProcessDiff(diff.SameItems, GeneratedPriceType.SameItems);
-            ProcessDiff(diff.DeletedItems, GeneratedPriceType.DeletedItems);
+            this.ProcessDiff(diff.NewItems, GeneratedPriceType.NewItems);
+            this.ProcessDiff(diff.SameItems, GeneratedPriceType.SameItems);
+            this.ProcessDiff(diff.DeletedItems, GeneratedPriceType.DeletedItems);
 
             return Tuple.Create(diff.SameItems.Count, diff.NewItems.Count, diff.DeletedItems.Count);
         }
@@ -191,16 +191,16 @@ namespace Supplier2Presta.Processors
                         break;
                 }
 
-                if (OnProductProcessed != null)
+                if (this.OnProductProcessed != null)
                 {
-                    OnProductProcessed(item.Name, generatedPriceType);
+                    this.OnProductProcessed(item.Name, generatedPriceType);
                 }
             }
         }
 
         private void UpdateProductBalance(PriceItem priceItem, product product)
         {
-            var stock = GetStockValue(priceItem, product);
+            var stock = this.GetStockValue(priceItem, product);
             if (stock.quantity != priceItem.Balance)
             {
                 stock.quantity = priceItem.Balance;
@@ -222,60 +222,60 @@ namespace Supplier2Presta.Processors
         {
             var product = ProductsMapper.Create(priceItem);
 
-            var category = GetCategoryValue(priceItem);
+            var category = this.GetCategoryValue(priceItem);
             product = ProductsMapper.MapCategory(product, category);
 
             var supplier = suppliers.First(s => s.name.Equals(priceItem.SupplierName, StringComparison.CurrentCultureIgnoreCase));
             product = ProductsMapper.MapSupplier(product, supplier);
 
-            var featureValue = GetFeatureValue(priceItem.Size, sizeFeature);
+            var featureValue = this.GetFeatureValue(priceItem.Size, sizeFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = GetFeatureValue(priceItem.Color, colorFeature);
+            featureValue = this.GetFeatureValue(priceItem.Color, colorFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = GetFeatureValue(priceItem.Material, materialFeature);
+            featureValue = this.GetFeatureValue(priceItem.Material, materialFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = GetFeatureValue(priceItem.Country, countryFeature);
+            featureValue = this.GetFeatureValue(priceItem.Country, countryFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = GetFeatureValue(priceItem.Packing, packingFeature);
+            featureValue = this.GetFeatureValue(priceItem.Packing, packingFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = GetFeatureValue(priceItem.Length, lengthFeature);
+            featureValue = this.GetFeatureValue(priceItem.Length, lengthFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = GetFeatureValue(priceItem.Diameter, diameterFeature);
+            featureValue = this.GetFeatureValue(priceItem.Diameter, diameterFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = GetFeatureValue(priceItem.Battery, batteryFeature);
+            featureValue = this.GetFeatureValue(priceItem.Battery, batteryFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            var manufacturerValue = GetManufacturerValue(priceItem, product);
+            var manufacturerValue = this.GetManufacturerValue(priceItem, product);
             product = ProductsMapper.MapManufacturer(product, manufacturerValue);
 
             // Добавление продукта
             product = productFactory.Add(product);
             
-            GetProductSupplierValue(priceItem, product, supplier);
+            this.GetProductSupplierValue(priceItem, product, supplier);
 
-            var image1 = GetImageValue(priceItem.Photo1, product);
+            var image1 = this.GetImageValue(priceItem.Photo1, product);
             product = ProductsMapper.MapImage(product, image1);
 
-            var image2 = GetImageValue(priceItem.Photo2, product);
+            var image2 = this.GetImageValue(priceItem.Photo2, product);
             product = ProductsMapper.MapImage(product, image2);
 
-            var image3 = GetImageValue(priceItem.Photo3, product);
+            var image3 = this.GetImageValue(priceItem.Photo3, product);
             product = ProductsMapper.MapImage(product, image3);
 
-            var image4 = GetImageValue(priceItem.Photo4, product);
+            var image4 = this.GetImageValue(priceItem.Photo4, product);
             product = ProductsMapper.MapImage(product, image4);
 
-            var image5 = GetImageValue(priceItem.Photo5, product);
+            var image5 = this.GetImageValue(priceItem.Photo5, product);
             product = ProductsMapper.MapImage(product, image5);
 
-            UpdateProductBalance(priceItem, product);
+            this.UpdateProductBalance(priceItem, product);
         }
 
         private manufacturer GetManufacturerValue(PriceItem priceItem, product product)

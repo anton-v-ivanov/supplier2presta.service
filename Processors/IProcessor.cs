@@ -1,9 +1,9 @@
 ﻿using System;
 
-using Supplier2Presta.Diffs;
-using Supplier2Presta.Entities;
+using Supplier2Presta.Service.Diffs;
+using Supplier2Presta.Service.Entities;
 
-namespace Supplier2Presta.Processors
+namespace Supplier2Presta.Service.Processors
 {
     public interface IProcessor
     {

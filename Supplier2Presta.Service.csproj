@@ -35,10 +35,14 @@
     <Reference Include="Bukimedia.PrestaSharp">
       <HintPath>libs\Bukimedia.PrestaSharp.dll</HintPath>
     </Reference>
+    <Reference Include="NLog">
+      <HintPath>packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="RestSharp">
       <HintPath>libs\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -47,14 +51,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CategoryBuilders\CategoryFileBuilder.cs" />
-    <Compile Include="CategoryBuilders\ICategoryBuilder.cs" />
     <Compile Include="Diffs\Diff.cs" />
     <Compile Include="Diffs\Differ.cs" />
     <Compile Include="Diffs\IDiffer.cs" />
     <Compile Include="Entities\GeneratedPriceType.cs" />
     <Compile Include="Entities\PriceFormat.cs" />
     <Compile Include="Entities\PriceItem.cs" />
+    <Compile Include="Entities\PriceType.cs" />
     <Compile Include="Entities\ProcessEventDelegate.cs" />
     <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Helpers\ProductsMapper.cs" />
@@ -62,15 +65,14 @@
     <Compile Include="PriceItemBuilders\HappinnessPriceItemBuilder.cs" />
     <Compile Include="PriceItemBuilders\IPriceItemBuilder.cs" />
     <Compile Include="PriceItemBuilders\PriceItemBuilderBase.cs" />
-    <Compile Include="PriceItemBuilders\SexsnabPriceItemBuilder.cs" />
     <Compile Include="Processors\IProcessor.cs" />
-    <Compile Include="Processors\PriceFileProcessor.cs" />
     <Compile Include="Processors\PriceWebServiceProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

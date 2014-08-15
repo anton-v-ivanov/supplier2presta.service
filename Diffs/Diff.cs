@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-using Supplier2Presta.Entities;
+using Supplier2Presta.Service.Entities;
 
-namespace Supplier2Presta.Diffs
+namespace Supplier2Presta.Service.Diffs
 {
     public class Diff
     {

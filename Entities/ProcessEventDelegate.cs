@@ -1,4 +1,4 @@
-﻿namespace Supplier2Presta.Entities
+﻿namespace Supplier2Presta.Service.Entities
 {
     public class EventDelegates
     {

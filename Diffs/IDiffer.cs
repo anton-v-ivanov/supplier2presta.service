@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Supplier2Presta.Diffs
+namespace Supplier2Presta.Service.Diffs
 {
     public interface IDiffer
     {

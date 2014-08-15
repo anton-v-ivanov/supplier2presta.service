@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-using Supplier2Presta.Entities;
-using Supplier2Presta.PriceItemBuilders;
+using Supplier2Presta.Service.Entities;
+using Supplier2Presta.Service.PriceItemBuilders;
 
-namespace Supplier2Presta.Diffs
+namespace Supplier2Presta.Service.Diffs
 {
     public class Differ : IDiffer
     {
@@ -19,7 +19,7 @@ namespace Supplier2Presta.Diffs
         {
             var localLines = newLines.Skip(1).ToList(); // пропуск строки с заголовками
             
-            var newItems = localLines.Select(builder.Build);
+            var newItems = localLines.Select(this.builder.Build);
             
             var newProds = new Dictionary<string, PriceItem>();
             foreach (var item in newItems)
@@ -35,7 +35,7 @@ namespace Supplier2Presta.Diffs
             {
                 localLines = oldLines.Skip(1).ToList(); // пропуск строки с заголовками
 
-                var oldItems = localLines.Select(builder.Build);
+                var oldItems = localLines.Select(this.builder.Build);
                 foreach (var item in oldItems)
                 {
                     if (!oldProds.ContainsKey(item.Reference))

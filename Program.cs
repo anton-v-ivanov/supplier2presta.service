@@ -1,117 +1,66 @@
-﻿using NLog;
-using Supplier2Presta.CategoryBuilders;
-using Supplier2Presta.Diffs;
-using Supplier2Presta.Entities;
-using Supplier2Presta.Helpers;
-using Supplier2Presta.PriceItemBuilders;
-using Supplier2Presta.Processors;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
+using NLog;
+
+using Supplier2Presta.Service.Diffs;
+using Supplier2Presta.Service.Entities;
+using Supplier2Presta.Service.Helpers;
+using Supplier2Presta.Service.PriceItemBuilders;
+using Supplier2Presta.Service.Processors;
+
 namespace Supplier2Presta.Service
 {
-    class Program
+    public class Program
     {
-        private static Logger Log = LogManager.GetCurrentClassLogger();
+        private const int Ok = 0;
+        private const int NewPriceFileIsNotExists = -1;
+        private const int NewPriceFileIsEmpty = -2;
+        private const int InternalError = -3;
+
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
         private static int currentCount;
         private static int totalCount;
-        
-        private const int NewPriceFileIsNotExists = -1;
-        private const int NewPriceFileIsEmpty = -2;        
 
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
             var priceEncoding = ConfigurationManager.AppSettings["price-encoding"];
-            var oldPricePath = ConfigurationManager.AppSettings["old-price"];
-            List<string> oldPriceLines = null;
-            if (File.Exists(oldPricePath))
+
+            var archiveDirectory = ConfigurationManager.AppSettings["archive-directory"];
+            var oldPriceLines = LoadOldPrice(archiveDirectory, priceEncoding);
+
+            string newPriceUrl = ConfigurationManager.AppSettings["new-price-url"];
+            List<string> newPriceLines;
+            string newPriceFileName;
+            var newPriceLoadResult = TryLoadNewPrice(priceEncoding, newPriceUrl, out newPriceLines, out newPriceFileName);
+            if (newPriceLoadResult != Ok)
             {
-                Log.Debug("Загрузка предыдущего прайса. Путь {0}", oldPricePath);
-
-                oldPriceLines = File.ReadLines(oldPricePath, Encoding.GetEncoding(priceEncoding)).ToList();
-                Log.Debug("Загружено {0} строк из предыдущего прайса", oldPriceLines.Count.ToString(CultureInfo.InvariantCulture));
-            }
-
-            var newPricePath = ConfigurationManager.AppSettings["new-price"];
-            if(!File.Exists(newPricePath))
-            {
-                Log.Fatal(string.Format("Новый прайс пуст"));
-                return NewPriceFileIsNotExists;
-            }
-
-            List<string> newPriceLines = File.ReadLines(newPricePath, Encoding.GetEncoding(priceEncoding)).ToList();
-            Log.Debug("Загружено {0} строк из нового прайса", newPriceLines.Count.ToString(CultureInfo.InvariantCulture));
-
-            if (newPriceLines.Count == 0)
-            {
-                Log.Fatal(string.Format("Новый прайс пуст"));
-                return NewPriceFileIsEmpty;
-            }
-
-            int currentCount = 0;
-
-            var oneFileCount = newPriceLines.Count;
-            var split = Convert.ToBoolean(ConfigurationManager.AppSettings["file-split"]);
-            if (split)
-            {
-                oneFileCount = Convert.ToInt32(Convert.ToInt32(ConfigurationManager.AppSettings["one-file-count"]));
-            }
-
-            var shortenings = new Dictionary<string, string>();
-            var autoReplace = Convert.ToBoolean(ConfigurationManager.AppSettings["auto-replace"]);
-            if (autoReplace)
-            {
-                var autoReplaces = File.ReadAllLines(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\Words.txt", Encoding.UTF8);
-                shortenings = Helper.GetShortenings(autoReplaces);
+                return newPriceLoadResult;
             }
 
             var multiplicator = float.Parse(ConfigurationManager.AppSettings["multiplicator"], CultureInfo.InvariantCulture);
             try
             {
-                IPriceItemBuilder priceItemBuilder;
+                XmlSerializer serializer = new XmlSerializer(typeof(PriceFormat));
                 PriceFormat priceFormat;
-                if (rbSexsnab.Checked)
+                using (var stream = new FileStream("happiness.xml", FileMode.Open))
                 {
-                    var serializer = new XmlSerializer(typeof(PriceFormat));
-                    using (var stream = new FileStream("sexsnab.xml", FileMode.Open))
-                    {
-                        priceFormat = (PriceFormat)serializer.Deserialize(stream);
-                    }
-
-                    priceItemBuilder = new SexsnabPriceItemBuilder(priceFormat, multiplicator, shortenings, rbFile.Checked);
+                    priceFormat = (PriceFormat)serializer.Deserialize(stream);
                 }
-                else
-                {
-                    var serializer = new XmlSerializer(typeof(PriceFormat));
-                    using (var stream = new FileStream("happiness.xml", FileMode.Open))
-                    {
-                        priceFormat = (PriceFormat)serializer.Deserialize(stream);
-                    }
 
-                    priceItemBuilder = new HappinessPriceItemBuilder(priceFormat, multiplicator, rbFile.Checked);
-                }
+                IPriceItemBuilder priceItemBuilder = new HappinessPriceItemBuilder(priceFormat, multiplicator);
 
                 IDiffer differ = new Differ(priceItemBuilder);
-                IProcessor processor;
-                if (rbApi.Checked)
-                {
-                    processor = new PriceWebServiceProcessor(differ);
-                }
-                else
-                {
-                    processor = new PriceFileProcessor(newPricePath, oneFileCount, differ);
-                }
-
-                ICategoryBuilder categoryBuilder = new CategoryFileBuilder(priceFormat, newPricePath);
-                var categoryCount = categoryBuilder.Build(newPriceLines);
-
+                IProcessor processor = new PriceWebServiceProcessor(differ);
                 processor.OnProductProcessed += OnProductProcessed;
                 var task = new Task<Tuple<int, int, int>>(
                     () =>
@@ -127,15 +76,68 @@ namespace Supplier2Presta.Service
                 var result = task.Result;
                 var count = newPriceLines.Count() - 1; // заголовок не считаем
                 Log.Info("========================================================================");
-                Log.Info(string.Format("Обработано {0} позиций. Создано {1} категорий.\r\nТовары: {2} одинаковых, {3} новых, {4} удалённых", count, categoryCount, result.Item1, result.Item2, result.Item3));
+                Log.Info(string.Format("Обработано {0} позиций. Товары: {2} одинаковых, {3} новых, {4} удалённых", count, result.Item1, result.Item2, result.Item3));
 
-                Settings.Default.PrevPriceFile = newPricePath;
-                Settings.Default.Save();
+                SetLastPrice(newPriceFileName, archiveDirectory);
+                return Ok;
             }
             catch (Exception ex)
             {
                 Log.Error("Ошибка обработки прайса", ex);
+                return InternalError;
             }
+        }
+
+        private static int TryLoadNewPrice(string priceEncoding, string newPriceUrl, out List<string> newPrice, out string newPriceFileName)
+        {
+            newPrice = new List<string>();
+            newPriceFileName = string.Format("price-{0}.csv", DateTime.Now.ToString(CultureInfo.InvariantCulture));
+            using (var webClient = new WebClient())
+            {
+                webClient.DownloadFile(newPriceUrl, newPriceFileName);
+            }
+
+            if (!File.Exists(newPriceFileName))
+            {
+                Log.Fatal(string.Format("Новый прайс не существует"));
+                return NewPriceFileIsNotExists;
+            }
+
+            newPrice = File.ReadLines(newPriceFileName, Encoding.GetEncoding(priceEncoding)).ToList();
+            Log.Debug("Загружено {0} строк из нового прайса", newPrice.Count.ToString(CultureInfo.InvariantCulture));
+
+            if (newPrice.Count > 0)
+            {
+                return Ok;
+            }
+
+            Log.Fatal(string.Format("Новый прайс пуст"));
+            return NewPriceFileIsEmpty;
+        }
+
+        private static List<string> LoadOldPrice(string archiveDirectory, string priceEncoding)
+        {
+            var oldPricePath = archiveDirectory + "\\" + ConfigurationManager.AppSettings["old-price"];
+            List<string> oldPriceLines = null;
+            if (File.Exists(oldPricePath))
+            {
+                Log.Debug("Загрузка предыдущего прайса. Путь {0}", oldPricePath);
+
+                oldPriceLines = File.ReadLines(oldPricePath, Encoding.GetEncoding(priceEncoding))
+                    .ToList();
+                Log.Debug("Загружено {0} строк из предыдущего прайса", oldPriceLines.Count.ToString(CultureInfo.InvariantCulture));
+            }
+            return oldPriceLines;
+        }
+
+        private static void SetLastPrice(string newPricePath, string archiveDirectory)
+        {
+            var file = Path.GetFileName(newPricePath);
+            File.Copy(newPricePath, archiveDirectory + "\\" + file, true);
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings["old-price"].Value = file;
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
         }
 
         private static void OnProductProcessed(string info, GeneratedPriceType currentGeneratedPriceType)

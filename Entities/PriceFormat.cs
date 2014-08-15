@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Supplier2Presta.Entities
+namespace Supplier2Presta.Service.Entities
 {
     [Serializable]
     public class PriceFormat

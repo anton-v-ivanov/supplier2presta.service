@@ -1,6 +1,6 @@
-﻿using Supplier2Presta.Entities;
+﻿using Supplier2Presta.Service.Entities;
 
-namespace Supplier2Presta.PriceItemBuilders
+namespace Supplier2Presta.Service.PriceItemBuilders
 {
     public interface IPriceItemBuilder
     {

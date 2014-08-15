@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Supplier2Presta.Helpers
+namespace Supplier2Presta.Service.Helpers
 {
     public static class StringExtensions
     {
@@ -46,11 +46,6 @@ namespace Supplier2Presta.Helpers
                 .Aggregate(str, (current, match) => current.Replace(match.Value, match.Value.ToUpperInvariant()));
         }
 
-        private static bool IsAllUpper(string input)
-        {
-            return input.All(t => !char.IsLetter(t) || char.IsUpper(t));
-        }
-
         public static string MakeSafeName(this string str)
         {
             //^<>;=#{}
@@ -63,6 +58,11 @@ namespace Supplier2Presta.Helpers
                 .Replace("#", "№")
                 .Replace("{", " ")
                 .Replace("}", " ");
+        }
+
+        private static bool IsAllUpper(string input)
+        {
+            return input.All(t => !char.IsLetter(t) || char.IsUpper(t));
         }
     }
 }
