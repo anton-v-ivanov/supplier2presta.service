@@ -36,6 +36,8 @@ namespace Supplier2Presta.Service
             var priceEncoding = ConfigurationManager.AppSettings["price-encoding"];
 
             var archiveDirectory = ConfigurationManager.AppSettings["archive-directory"];
+            archiveDirectory = string.Format(@"{0}\{1}", Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), archiveDirectory);
+
             var oldPriceLines = LoadOldPrice(archiveDirectory, priceEncoding);
 
             string newPriceUrl = ConfigurationManager.AppSettings["new-price-url"];
@@ -52,7 +54,7 @@ namespace Supplier2Presta.Service
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(PriceFormat));
                 PriceFormat priceFormat;
-                using (var stream = new FileStream("happiness.xml", FileMode.Open))
+                using (var stream = new FileStream("happiness_short.xml", FileMode.Open))
                 {
                     priceFormat = (PriceFormat)serializer.Deserialize(stream);
                 }
@@ -68,15 +70,16 @@ namespace Supplier2Presta.Service
                         OnProductProcessed("Построение диффа", GeneratedPriceType.None);
                         var diff = differ.GetDiff(newPriceLines, oldPriceLines);
                         totalCount = diff.DeletedItems.Count + diff.NewItems.Count + diff.SameItems.Count;
+                        //return new Tuple<int, int, int>(0,0,0);
                         return processor.Process(diff);
                     });
 
-                task.Start(TaskScheduler.FromCurrentSynchronizationContext());
+                task.Start();
 
                 var result = task.Result;
                 var count = newPriceLines.Count() - 1; // заголовок не считаем
                 Log.Info("========================================================================");
-                Log.Info(string.Format("Обработано {0} позиций. Товары: {2} одинаковых, {3} новых, {4} удалённых", count, result.Item1, result.Item2, result.Item3));
+                Log.Info(string.Format("Обработано {0} позиций. Товары: {1} одинаковых, {2} новых, {3} удалённых", count, result.Item1, result.Item2, result.Item3));
 
                 SetLastPrice(newPriceFileName, archiveDirectory);
                 return Ok;
@@ -91,7 +94,7 @@ namespace Supplier2Presta.Service
         private static int TryLoadNewPrice(string priceEncoding, string newPriceUrl, out List<string> newPrice, out string newPriceFileName)
         {
             newPrice = new List<string>();
-            newPriceFileName = string.Format("price-{0}.csv", DateTime.Now.ToString(CultureInfo.InvariantCulture));
+            newPriceFileName = string.Format("price_{0}.csv", DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
             using (var webClient = new WebClient())
             {
                 webClient.DownloadFile(newPriceUrl, newPriceFileName);
@@ -117,14 +120,17 @@ namespace Supplier2Presta.Service
 
         private static List<string> LoadOldPrice(string archiveDirectory, string priceEncoding)
         {
-            var oldPricePath = archiveDirectory + "\\" + ConfigurationManager.AppSettings["old-price"];
-            List<string> oldPriceLines = null;
-            if (File.Exists(oldPricePath))
-            {
-                Log.Debug("Загрузка предыдущего прайса. Путь {0}", oldPricePath);
+            var directory = new DirectoryInfo(archiveDirectory);
+            var oldPriceFile = directory.GetFiles()
+             .OrderByDescending(f => f.LastWriteTime)
+             .FirstOrDefault();
 
-                oldPriceLines = File.ReadLines(oldPricePath, Encoding.GetEncoding(priceEncoding))
-                    .ToList();
+            List<string> oldPriceLines = null;
+            if (oldPriceFile != null)
+            {
+                Log.Debug("Загрузка предыдущего прайса. Путь {0}", oldPriceFile.Name);
+
+                oldPriceLines = File.ReadLines(oldPriceFile.FullName, Encoding.GetEncoding(priceEncoding)).ToList();
                 Log.Debug("Загружено {0} строк из предыдущего прайса", oldPriceLines.Count.ToString(CultureInfo.InvariantCulture));
             }
             return oldPriceLines;
@@ -133,11 +139,7 @@ namespace Supplier2Presta.Service
         private static void SetLastPrice(string newPricePath, string archiveDirectory)
         {
             var file = Path.GetFileName(newPricePath);
-            File.Copy(newPricePath, archiveDirectory + "\\" + file, true);
-            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["old-price"].Value = file;
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
+            File.Move(newPricePath, archiveDirectory + "\\" + file);
         }
 
         private static void OnProductProcessed(string info, GeneratedPriceType currentGeneratedPriceType)

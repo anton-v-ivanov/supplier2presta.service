@@ -9,7 +9,6 @@ namespace Supplier2Presta.Service.PriceItemBuilders
     public class HappinessPriceItemBuilder : PriceItemBuilderBase, IPriceItemBuilder
     {
         private static readonly Regex LineRegex = new Regex(@"(""[^""]+"";)|(\d+ ?\d*;)|("""";)|([\w./:-]*;)|(""[^""]+""\r?)|(""""\r?)", RegexOptions.Compiled);
-
         public HappinessPriceItemBuilder(PriceFormat priceFormat, float? multiplicator)
             : base(priceFormat, multiplicator)
         {
@@ -17,33 +16,29 @@ namespace Supplier2Presta.Service.PriceItemBuilders
 
         public PriceItem Build(string line)
         {
-            //Артикул;"Основная категория товара";"Подраздел категории товара";Наименование;Описание;Производитель;"Артикул производителя";"Цена (Розница)";"Цена (Опт)";"Можно купить";"На складе";"Время отгрузки";Размер;Цвет;aID;Материал;Батарейки;Упаковка;"Вес (брутто)";"Фотография маленькая до 150*150";"Фотография 1";"Фотография 2";"Фотография 3";"Фотография 4";"Фотография 5";Штрихкод
-            //16;"Эротическая одежда";"Одежда из латекса";"Трусы мужские с вырезом для полового члена";"Трусы мужские с вырезом для полового члена. Размер M (46-48). ";Distra;"9650M BX GP";690.00;345.00;0;0;3;M;черный;20;латекс;;"картонная коробка";;http://feed.p5s.ru/images/small/small_16.jpg;http://feed.p5s.ru/images/big/16.jpg;;;;;
             var columns = LineRegex.Matches(line);
-
-            if (columns.Count < 25 || columns.Count > 26)
-            {
-                throw new Exception(string.Format("Неправильный формат строки: {0}", line));
-            }
-
+            
             var result = this.Build(columns);
-            result.Name = columns[this.PriceFormat.Name].Value.Trim(new[] { '"', ';' }).MakeSafeName();
+            result.Name = this.PriceFormat.Name > -1 ? columns[this.PriceFormat.Name].Value.Trim(new[] { '"', ';' }).MakeSafeName() : string.Empty;
             result.SupplierName = "happiness";
             result.Reference = "200" + columns[this.PriceFormat.Reference].Value.Trim(new[] { '"', ';' });
             result.Category = this.GetCategoryName(columns);
-            result.Active = Convert.ToBoolean(Convert.ToInt32(columns[this.PriceFormat.Active].Value.Trim(new[] { '"', ';' })));
-            result.Battery = columns[this.PriceFormat.Battery].Value.Trim(new[] { '"', ';' });
-            result.Photo2 = columns[this.PriceFormat.Photo2].Value.Trim(new[] { '"', ';' });
-            result.Photo3 = columns[this.PriceFormat.Photo3].Value.Trim(new[] { '"', ';' });
-            result.Photo4 = columns[this.PriceFormat.Photo4].Value.Trim(new[] { '"', ';' });
-            result.Photo5 = columns[this.PriceFormat.Photo5].Value.Trim(new[] { '"', ';' });
-            result.Weight = columns[this.PriceFormat.Weight].Value.Trim(new[] { '"', ';' });
+            result.Active = this.PriceFormat.Active > -1 ? Convert.ToBoolean(Convert.ToInt32(columns[this.PriceFormat.Active].Value.Trim(new[] { '"', ';' }))) : true;
+            result.Battery = this.PriceFormat.Battery > -1 ? columns[this.PriceFormat.Battery].Value.Trim(new[] { '"', ';' }) : string.Empty;
+            result.Photo2 = this.PriceFormat.Photo2 > -1 ? columns[this.PriceFormat.Photo2].Value.Trim(new[] { '"', ';' }) : string.Empty;
+            result.Photo3 = this.PriceFormat.Photo3 > -1 ? columns[this.PriceFormat.Photo3].Value.Trim(new[] { '"', ';' }) : string.Empty;
+            result.Photo4 = this.PriceFormat.Photo4 > -1 ? columns[this.PriceFormat.Photo4].Value.Trim(new[] { '"', ';' }) : string.Empty;
+            result.Photo5 = this.PriceFormat.Photo5 > -1 ? columns[this.PriceFormat.Photo5].Value.Trim(new[] { '"', ';' }) : string.Empty;
+            result.Weight = this.PriceFormat.Weight > -1 ? columns[this.PriceFormat.Weight].Value.Trim(new[] { '"', ';' }) : string.Empty;
 
             return result;
         }
 
         private string GetCategoryName(MatchCollection columns)
         {
+            if (this.PriceFormat.Category1 < 0)
+                return string.Empty;
+
             var parent = columns[this.PriceFormat.Category1].Value.Trim(new[] { '"', ';' }).FirstLetterToUpper();
             var child1 = columns[this.PriceFormat.Category2].Value.Trim(new[] { '"', ';' }).FirstLetterToUpper();
             string child2 = null;

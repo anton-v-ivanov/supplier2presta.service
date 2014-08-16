@@ -10,11 +10,14 @@ using Bukimedia.PrestaSharp.Factories;
 using Supplier2Presta.Service.Diffs;
 using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Helpers;
+using NLog;
 
 namespace Supplier2Presta.Service.Processors
 {
     public class PriceWebServiceProcessor : IProcessor
     {
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
         private static ProductFactory productFactory;
         private static CategoryFactory categoryFactory;
         private static StockAvailableFactory stockFactory;
@@ -173,12 +176,19 @@ namespace Supplier2Presta.Service.Processors
                     case GeneratedPriceType.SameItems:
                         if (existingProd == null || !existingProd.Any())
                         {
-                            this.AddNewProduct(item);
+                            Log.Warn("Продукт не существует. Необходимо добавить его вручную: {0}", item.ToString("Артикул: {{Reference}};"));
                         }
                         else
                         {
-                            this.UpdateProductBalance(item, existingProd.First());
-                            this.UpdateProductPrice(item, existingProd.First());
+                            try
+                            {
+                                this.UpdateProductBalance(item, existingProd.First());
+                                this.UpdateProductPriceAndActivity(item, existingProd.First());
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error("Ошибка при обновлении продукта {0} {1}", item.ToString("Артикул: {{Reference}};"), ex);
+                            }
                         }
 
                         break;
@@ -193,7 +203,7 @@ namespace Supplier2Presta.Service.Processors
 
                 if (this.OnProductProcessed != null)
                 {
-                    this.OnProductProcessed(item.Name, generatedPriceType);
+                    this.OnProductProcessed("Артикул: " + item.Reference, generatedPriceType);
                 }
             }
         }
@@ -208,17 +218,19 @@ namespace Supplier2Presta.Service.Processors
             }
         }
 
-        private void UpdateProductPrice(PriceItem priceItem, product product)
+        private void UpdateProductPriceAndActivity(PriceItem priceItem, product product)
         {
-            if (product.price != Convert.ToDecimal(priceItem.RetailPrice) || product.wholesale_price != Convert.ToDecimal(priceItem.WholesalePrice))
+            if (product.price != Convert.ToDecimal(priceItem.RetailPrice) || product.wholesale_price != Convert.ToDecimal(priceItem.WholesalePrice) 
+                || product.active != Convert.ToInt32(priceItem.Active))
             {
                 product.price = Convert.ToDecimal(priceItem.RetailPrice);
                 product.wholesale_price = Convert.ToDecimal(priceItem.WholesalePrice);
+                product.active = Convert.ToInt32(priceItem.Active);
                 productFactory.Update(product);
             }
         }
 
-        private void AddNewProduct(PriceItem priceItem)
+        /*private void AddNewProduct(PriceItem priceItem)
         {
             var product = ProductsMapper.Create(priceItem);
 
@@ -341,27 +353,6 @@ namespace Supplier2Presta.Service.Processors
             }
         }
 
-        private stock_available GetStockValue(PriceItem priceItem, product product)
-        {
-            var filter = new Dictionary<string, string>
-            {
-                { "id_product", product.id.Value.ToString(CultureInfo.InvariantCulture) }
-            };
-
-            var stock = stockFactory.GetByFilter(filter, null, null).FirstOrDefault();
-            if (stock == null)
-            {
-                stock = new stock_available
-                {
-                    id_product = product.id,
-                    quantity = priceItem.Balance
-                };
-                stock = stockFactory.AddList(new List<stock_available> { stock }).First();
-            }
-
-            return stock;
-        }
-
         private category GetCategoryValue(PriceItem priceItem)
         {
             var filter = new Dictionary<string, string> { { "name", priceItem.Category } };
@@ -395,6 +386,27 @@ namespace Supplier2Presta.Service.Processors
             }
 
             return featureValue;
+        }*/
+
+        private stock_available GetStockValue(PriceItem priceItem, product product)
+        {
+            var filter = new Dictionary<string, string>
+            {
+                { "id_product", product.id.Value.ToString(CultureInfo.InvariantCulture) }
+            };
+
+            var stock = stockFactory.GetByFilter(filter, null, null).FirstOrDefault();
+            if (stock == null)
+            {
+                stock = new stock_available
+                {
+                    id_product = product.id,
+                    quantity = priceItem.Balance
+                };
+                stock = stockFactory.AddList(new List<stock_available> { stock }).First();
+            }
+
+            return stock;
         }
 
         private void DisableProduct(product product)
