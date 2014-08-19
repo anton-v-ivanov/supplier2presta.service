@@ -45,12 +45,30 @@ namespace Supplier2Presta.Service.Diffs
                 }
             }
 
-            return new Diff 
+            var diff = new Diff 
             { 
                 NewItems = newProds.Where(kvp => !oldProds.ContainsKey(kvp.Key)).ToDictionary(key => key.Key, value => value.Value),
                 DeletedItems = oldProds.Where(kvp => !newProds.ContainsKey(kvp.Key)).ToDictionary(key => key.Key, value => value.Value),
-                SameItems = oldProds.Where(kvp => newProds.ContainsKey(kvp.Key)).ToDictionary(key => key.Key, value => value.Value) 
+                UpdatedItems = oldProds.Where(kvp => newProds.ContainsKey(kvp.Key)).ToDictionary(key => key.Key, value => value.Value)
             };
+
+            var toRemove = new List<string>();
+            foreach (var item in diff.UpdatedItems.Values)
+            {
+                var oldItem = oldProds[item.Reference];
+                if (item.RetailPrice == oldItem.RetailPrice && item.WholesalePrice == oldItem.WholesalePrice 
+                    && item.Active == oldItem.Active && item.Balance == oldItem.Balance)
+                {
+                    toRemove.Add(item.Reference);
+                }
+            }
+
+            foreach (var reference in toRemove)
+            {
+                diff.UpdatedItems.Remove(reference);
+            }
+
+            return diff;
         }
     }
 }

@@ -3,5 +3,7 @@
     public class EventDelegates
     {
         public delegate void ProcessEventDelegate(string info, GeneratedPriceType currentGeneratedPriceType);
+        
+        public delegate void NewItemsEventDelegate(PriceItem item);
     }
 }

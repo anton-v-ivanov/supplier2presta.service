@@ -10,6 +10,6 @@ namespace Supplier2Presta.Service.Diffs
         
         public Dictionary<string, PriceItem> DeletedItems { get; set; }
         
-        public Dictionary<string, PriceItem> SameItems { get; set; }
+        public Dictionary<string, PriceItem> UpdatedItems { get; set; }
     }
 }

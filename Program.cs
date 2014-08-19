@@ -31,6 +31,8 @@ namespace Supplier2Presta.Service
         private static int currentCount;
         private static int totalCount;
 
+        private static List<PriceItem> NewProducts = new List<PriceItem>();
+
         public static int Main(string[] args)
         {
             var priceEncoding = ConfigurationManager.AppSettings["price-encoding"];
@@ -40,48 +42,40 @@ namespace Supplier2Presta.Service
 
             var oldPriceLines = LoadOldPrice(archiveDirectory, priceEncoding);
 
-            string newPriceUrl = ConfigurationManager.AppSettings["new-price-url"];
+            string newPriceUrl = ConfigurationManager.AppSettings["price-url"];
+            float? multiplicator = !string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["multiplicator"]) 
+                ? (float?)float.Parse(ConfigurationManager.AppSettings["multiplicator"], CultureInfo.InvariantCulture)
+                : null;
+
             List<string> newPriceLines;
             string newPriceFileName;
             var newPriceLoadResult = TryLoadNewPrice(priceEncoding, newPriceUrl, out newPriceLines, out newPriceFileName);
             if (newPriceLoadResult != Ok)
             {
-                return newPriceLoadResult;
+                throw new Exception("Невозможно загрузить новый прайс. Код ошибки: " + newPriceLoadResult);
             }
 
-            var multiplicator = float.Parse(ConfigurationManager.AppSettings["multiplicator"], CultureInfo.InvariantCulture);
+            var priceFormatFile = "happiness_short.xml";
+
             try
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(PriceFormat));
-                PriceFormat priceFormat;
-                using (var stream = new FileStream("happiness_short.xml", FileMode.Open))
+                var result = Load(priceEncoding, newPriceLines, multiplicator, priceFormatFile, oldPriceLines);
+                
+                Log.Info("========================================================================");
+                Log.Info(string.Format("Обработано {0} позиций. Товары: {1} обновлённых, {2} новых, {3} удалённых", result.Item1, result.Item2, result.Item3, result.Item4));
+                
+                SetLastPrice(newPriceFileName, archiveDirectory);
+                
+                string fullPriceUrl = ConfigurationManager.AppSettings["full-price-url"];
+
+                newPriceLoadResult = TryLoadNewPrice(priceEncoding, fullPriceUrl, out newPriceLines, out newPriceFileName);
+                if (newPriceLoadResult != Ok)
                 {
-                    priceFormat = (PriceFormat)serializer.Deserialize(stream);
+                    throw new Exception("Невозможно загрузить новый прайс. Код ошибки: " + newPriceLoadResult);
                 }
 
-                IPriceItemBuilder priceItemBuilder = new HappinessPriceItemBuilder(priceFormat, multiplicator);
-
-                IDiffer differ = new Differ(priceItemBuilder);
-                IProcessor processor = new PriceWebServiceProcessor(differ);
-                processor.OnProductProcessed += OnProductProcessed;
-                var task = new Task<Tuple<int, int, int>>(
-                    () =>
-                    {
-                        OnProductProcessed("Построение диффа", GeneratedPriceType.None);
-                        var diff = differ.GetDiff(newPriceLines, oldPriceLines);
-                        totalCount = diff.DeletedItems.Count + diff.NewItems.Count + diff.SameItems.Count;
-                        //return new Tuple<int, int, int>(0,0,0);
-                        return processor.Process(diff);
-                    });
-
-                task.Start();
-
-                var result = task.Result;
-                var count = newPriceLines.Count() - 1; // заголовок не считаем
-                Log.Info("========================================================================");
-                Log.Info(string.Format("Обработано {0} позиций. Товары: {1} одинаковых, {2} новых, {3} удалённых", count, result.Item1, result.Item2, result.Item3));
-
-                SetLastPrice(newPriceFileName, archiveDirectory);
+                var fullPriceAddResult = Load(priceEncoding, newPriceLines, multiplicator, "happiness.xml", null);
+                
                 return Ok;
             }
             catch (Exception ex)
@@ -89,6 +83,39 @@ namespace Supplier2Presta.Service
                 Log.Error("Ошибка обработки прайса", ex);
                 return InternalError;
             }
+        }
+
+        private static Tuple<int, int, int, int> Load(string priceEncoding, List<string> newPriceLines, float? multiplicator, string priceFormatFile, List<string> oldPriceLines)
+        {
+            var serializer = new XmlSerializer(typeof(PriceFormat));
+            PriceFormat priceFormat;
+            using (var stream = new FileStream(priceFormatFile, FileMode.Open))
+            {
+                priceFormat = (PriceFormat)serializer.Deserialize(stream);
+            }
+
+            IPriceItemBuilder priceItemBuilder = new HappinessPriceItemBuilder(priceFormat, multiplicator);
+
+            IDiffer differ = new Differ(priceItemBuilder);
+            IProcessor processor = new PriceWebServiceProcessor(differ);
+            processor.OnProductProcessed += OnProductProcessed;
+            processor.OnNewProduct += OnNewProduct;
+
+            var task = new Task<Tuple<int, int, int>>(
+                () =>
+                {
+                    OnProductProcessed("Построение диффа", GeneratedPriceType.None);
+                    var diff = differ.GetDiff(newPriceLines, oldPriceLines);
+                    totalCount = diff.DeletedItems.Count + diff.NewItems.Count + diff.UpdatedItems.Count;
+                    return processor.Process(diff);
+                });
+
+            task.Start();
+
+            var result = task.Result;
+            var count = newPriceLines.Count() - 1; // заголовок не считаем
+
+            return new Tuple<int,int,int,int>(count, result.Item1, result.Item2, result.Item3);
         }
 
         private static int TryLoadNewPrice(string priceEncoding, string newPriceUrl, out List<string> newPrice, out string newPriceFileName)
@@ -165,14 +192,17 @@ namespace Supplier2Presta.Service
                     throw new ArgumentOutOfRangeException("currentGeneratedPriceType");
             }
 
-            if (currentGeneratedPriceType == GeneratedPriceType.None || currentCount % 10 == 0)
-            {
-                string text = string.IsNullOrEmpty(priceTypeCategory)
-                    ? string.Format("{0}{1}", info, Environment.NewLine)
-                    : string.Format("Категория: {0}   |  Счётчик {1} из {2}  |  {3}{4}", priceTypeCategory, currentCount, totalCount, info, Environment.NewLine);
+            string text = string.IsNullOrEmpty(priceTypeCategory)
+                ? string.Format("{0}{1}", info, Environment.NewLine)
+                : string.Format("Категория: {0}   |  Счётчик {1} из {2}  |  {3}{4}", priceTypeCategory, currentCount, totalCount, info, Environment.NewLine);
 
-                Log.Info(text);
-            }
+            Log.Info(text);
+        }
+
+        private static void OnNewProduct(PriceItem item)
+        {
+            Log.Warn("Продукт не существует и будет добавлен: {0}", item.ToString("Артикул: {{Reference}};"));
+            NewProducts.Add(item);
         }
     }
 }

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<PriceFormat>
+    <Reference>0</Reference>
+    <Category1>1</Category1>
+    <Category2>2</Category2>
+    <Category3>-1</Category3>
+    <Name>3</Name>
+    <Description>4</Description>
+    <Manufacturer>5</Manufacturer>
+    <SupplierReference>6</SupplierReference>
+    <RetailPrice>7</RetailPrice>
+    <WholesalePrice>8</WholesalePrice>
+    <Active>9</Active>
+    <Balance>10</Balance>
+    <Size>12</Size>
+    <Color>13</Color>
+    <Material>15</Material>
+    <Battery>16</Battery>
+    <Packing>17</Packing>
+    <Weight>18</Weight>
+    <Thumbnail>19</Thumbnail>
+    <Photo1>20</Photo1>
+    <Photo2>21</Photo2>
+    <Photo3>22</Photo3>
+    <Photo4>23</Photo4>
+    <Photo5>24</Photo5>
+    <Ean13>25</Ean13>
+    <Country>-1</Country>
+</PriceFormat>

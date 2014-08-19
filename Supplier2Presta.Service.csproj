@@ -58,7 +58,7 @@
     <Compile Include="Entities\PriceFormat.cs" />
     <Compile Include="Entities\PriceItem.cs" />
     <Compile Include="Entities\PriceType.cs" />
-    <Compile Include="Entities\ProcessEventDelegate.cs" />
+    <Compile Include="Entities\EventDelegates.cs" />
     <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Helpers\ProductsMapper.cs" />
     <Compile Include="Helpers\StringExtensions.cs" />
@@ -67,6 +67,7 @@
     <Compile Include="PriceItemBuilders\PriceItemBuilderBase.cs" />
     <Compile Include="Processors\IProcessor.cs" />
     <Compile Include="Processors\PriceWebServiceProcessor.cs" />
+    <Compile Include="Processors\ShopApiFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -75,6 +76,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="happiness.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="happiness_short.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

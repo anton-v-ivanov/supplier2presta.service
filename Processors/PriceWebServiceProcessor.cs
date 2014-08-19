@@ -17,35 +17,19 @@ namespace Supplier2Presta.Service.Processors
     public class PriceWebServiceProcessor : IProcessor
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-
-        private static ProductFactory productFactory;
-        private static CategoryFactory categoryFactory;
-        private static StockAvailableFactory stockFactory;
-        private static ProductFeatureValueFactory featureValuesFactory;
-        private static ManufacturerFactory manufacturerFactory;
-        private static ImageFactory imageFactory;
-        private static SupplierFactory supplierFactory;
-        private static ProductSupplierFactory productSupplierFactory;
-
-        private static product_feature sizeFeature;
-        private static product_feature colorFeature;
-        private static product_feature materialFeature;
-        private static product_feature countryFeature;
-        private static product_feature packingFeature;
-        private static product_feature lengthFeature;
-        private static product_feature diameterFeature;
-        private static product_feature batteryFeature;
         
-        private static List<supplier> suppliers;
-
         private readonly IDiffer differ;
+        private readonly ShopApiFactory apiFactory;
 
         public PriceWebServiceProcessor(IDiffer differ)
         {
             this.differ = differ;
+            this.apiFactory = new ShopApiFactory();
         }
 
         public event EventDelegates.ProcessEventDelegate OnProductProcessed;
+        
+        public event EventDelegates.NewItemsEventDelegate OnNewProduct;
 
         public Tuple<int, int, int> Process(Diff diff)
         {
@@ -54,121 +38,21 @@ namespace Supplier2Presta.Service.Processors
                 this.OnProductProcessed("Подключение к API", GeneratedPriceType.None);
             }
 
-            this.InitFactories();
+            this.apiFactory.InitFactories("http://dirty-dreams.ru/api", "4MFF2R1ZFA4DXSYLDSKP8MK7V7W83KWL");
             
             this.ProcessDiff(diff.NewItems, GeneratedPriceType.NewItems);
-            this.ProcessDiff(diff.SameItems, GeneratedPriceType.SameItems);
+            this.ProcessDiff(diff.UpdatedItems, GeneratedPriceType.SameItems);
             this.ProcessDiff(diff.DeletedItems, GeneratedPriceType.DeletedItems);
 
-            return Tuple.Create(diff.SameItems.Count, diff.NewItems.Count, diff.DeletedItems.Count);
+            return Tuple.Create(diff.UpdatedItems.Count, diff.NewItems.Count, diff.DeletedItems.Count);
         }
-
-        private void InitFactories()
-        {
-            const string BaseUrl = "http://dirty-dreams.ru/api";
-            const string Account = "4MFF2R1ZFA4DXSYLDSKP8MK7V7W83KWL";
-            const string Password = "";
-            productFactory = new ProductFactory(BaseUrl, Account, Password);
-            categoryFactory = new CategoryFactory(BaseUrl, Account, Password);
-            stockFactory = new StockAvailableFactory(BaseUrl, Account, Password);
-            featureValuesFactory = new ProductFeatureValueFactory(BaseUrl, Account, Password);
-            imageFactory = new ImageFactory(BaseUrl, Account, Password);
-            productSupplierFactory = new ProductSupplierFactory(BaseUrl, Account, Password);
-            supplierFactory = new SupplierFactory(BaseUrl, Account, Password);
-            suppliers = supplierFactory.GetAll();
-
-            manufacturerFactory = new ManufacturerFactory(BaseUrl, Account, Password);
-
-            var featuresFactory = new ProductFeatureFactory(BaseUrl, Account, Password);
-            var features = featuresFactory.GetAll();
-
-            sizeFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Размер", StringComparison.InvariantCultureIgnoreCase));
-            if (sizeFeature == null)
-            {
-                sizeFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Размер") }
-                };
-                sizeFeature = featuresFactory.Add(sizeFeature);
-            }
-
-            colorFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Цвет", StringComparison.InvariantCultureIgnoreCase));
-            if (colorFeature == null)
-            {
-                colorFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Цвет") }
-                };
-                colorFeature = featuresFactory.Add(colorFeature);
-            }
-
-            batteryFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Батарейки", StringComparison.InvariantCultureIgnoreCase));
-            if (batteryFeature == null)
-            {
-                batteryFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Батарейки") }
-                };
-                batteryFeature = featuresFactory.Add(batteryFeature);
-            }
-
-            materialFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Материал", StringComparison.InvariantCultureIgnoreCase));
-            if (materialFeature == null)
-            {
-                materialFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Материал") }
-                };
-                materialFeature = featuresFactory.Add(materialFeature);
-            }
-
-            countryFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Страна", StringComparison.InvariantCultureIgnoreCase));
-            if (countryFeature == null)
-            {
-                countryFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Страна") }
-                };
-                countryFeature = featuresFactory.Add(countryFeature);
-            }
-
-            packingFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Упаковка", StringComparison.InvariantCultureIgnoreCase));
-            if (packingFeature == null)
-            {
-                packingFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Упаковка") }
-                };
-                packingFeature = featuresFactory.Add(packingFeature);
-            }
-
-            lengthFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Длина", StringComparison.InvariantCultureIgnoreCase));
-            if (lengthFeature == null)
-            {
-                lengthFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Длина") }
-                };
-                lengthFeature = featuresFactory.Add(lengthFeature);
-            }
-
-            diameterFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Диаметр", StringComparison.InvariantCultureIgnoreCase));
-            if (diameterFeature == null)
-            {
-                diameterFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Диаметр") }
-                };
-                diameterFeature = featuresFactory.Add(diameterFeature);
-            }
-        }
-
+        
         private void ProcessDiff(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType)
         {
             foreach (var item in priceItems.Values)
             {
                 var filter = new Dictionary<string, string> { { "reference", item.Reference } };
-                var existingProd = productFactory.GetByFilter(filter, null, null);
+                var existingProd = this.apiFactory.ProductFactory.GetByFilter(filter, null, null);
 
                 switch (generatedPriceType)
                 {
@@ -176,7 +60,10 @@ namespace Supplier2Presta.Service.Processors
                     case GeneratedPriceType.SameItems:
                         if (existingProd == null || !existingProd.Any())
                         {
-                            Log.Warn("Продукт не существует. Необходимо добавить его вручную: {0}", item.ToString("Артикул: {{Reference}};"));
+                            if (this.OnNewProduct != null)
+                            {
+                                this.OnNewProduct(item);
+                            }
                         }
                         else
                         {
@@ -214,7 +101,7 @@ namespace Supplier2Presta.Service.Processors
             if (stock.quantity != priceItem.Balance)
             {
                 stock.quantity = priceItem.Balance;
-                stockFactory.Update(stock);
+                this.apiFactory.StockFactory.Update(stock);
             }
         }
 
@@ -226,7 +113,7 @@ namespace Supplier2Presta.Service.Processors
                 product.price = Convert.ToDecimal(priceItem.RetailPrice);
                 product.wholesale_price = Convert.ToDecimal(priceItem.WholesalePrice);
                 product.active = Convert.ToInt32(priceItem.Active);
-                productFactory.Update(product);
+                this.apiFactory.ProductFactory.Update(product);
             }
         }
 
@@ -395,7 +282,7 @@ namespace Supplier2Presta.Service.Processors
                 { "id_product", product.id.Value.ToString(CultureInfo.InvariantCulture) }
             };
 
-            var stock = stockFactory.GetByFilter(filter, null, null).FirstOrDefault();
+            var stock = this.apiFactory.StockFactory.GetByFilter(filter, null, null).FirstOrDefault();
             if (stock == null)
             {
                 stock = new stock_available
@@ -403,7 +290,7 @@ namespace Supplier2Presta.Service.Processors
                     id_product = product.id,
                     quantity = priceItem.Balance
                 };
-                stock = stockFactory.AddList(new List<stock_available> { stock }).First();
+                stock = this.apiFactory.StockFactory.AddList(new List<stock_available> { stock }).First();
             }
 
             return stock;
@@ -412,7 +299,7 @@ namespace Supplier2Presta.Service.Processors
         private void DisableProduct(product product)
         {
             product.active = 0;
-            productFactory.Update(product);
+            this.apiFactory.ProductFactory.Update(product);
         }
     }
 }
