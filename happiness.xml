@@ -2,28 +2,28 @@
 <PriceFormat>
     <Reference>0</Reference>
     <Category1>1</Category1>
-    <Name>2</Name>
-    <Description>3</Description>
-    <Manufacturer>4</Manufacturer>
-    <SupplierReference>5</SupplierReference>
-    <RetailPrice>6</RetailPrice>
-    <WholesalePrice>7</WholesalePrice>
-    <Active>8</Active>
-    <Balance>9</Balance>
-    <Size>11</Size>
-    <Color>-1</Color>
-    <Material>12</Material>
-    <Battery>13</Battery>
-    <Packing>14</Packing>
-    <Weight>15</Weight>
-    <Thumbnail>16</Thumbnail>
-    <Photo1>17</Photo1>
-    <Photo2>18</Photo2>
-    <Photo3>19</Photo3>
-    <Photo4>20</Photo4>
-    <Photo5>21</Photo5>
-    <Category2>-1</Category2>
+    <Category2>2</Category2>
     <Category3>-1</Category3>
-    <Ean13>-1</Ean13>
+    <Name>3</Name>
+    <Description>4</Description>
+    <Manufacturer>5</Manufacturer>
+    <SupplierReference>6</SupplierReference>
+    <RetailPrice>7</RetailPrice>
+    <WholesalePrice>8</WholesalePrice>
+    <Active>9</Active>
+    <Balance>10</Balance>
+    <Size>12</Size>
+    <Color>13</Color>
+    <Material>15</Material>
+    <Battery>16</Battery>
+    <Packing>17</Packing>
+    <Weight>18</Weight>
+    <Thumbnail>19</Thumbnail>
+    <Photo1>20</Photo1>
+    <Photo2>21</Photo2>
+    <Photo3>22</Photo3>
+    <Photo4>23</Photo4>
+    <Photo5>24</Photo5>
+    <Ean13>25</Ean13>
     <Country>-1</Country>
 </PriceFormat>

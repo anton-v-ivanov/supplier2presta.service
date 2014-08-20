@@ -26,9 +26,6 @@ namespace Supplier2Presta.Service
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private static int currentCount;
-        private static int totalCount;
-
         private static List<PriceItem> NewProducts = new List<PriceItem>();
         
         private static readonly string _priceEncoding;
@@ -92,10 +89,13 @@ namespace Supplier2Presta.Service
             try
             {
                 var diff = GetDiff(priceFormat, newPriceLoadResult.PriceLines, oldPriceLoadResult.PriceLines);
-                var result = Load(diff);
-                
+
+                IProcessor processor = new PriceWebServiceProcessor();
+                processor.Process(diff.UpdatedItems, GeneratedPriceType.SameItems);
+                processor.Process(diff.DeletedItems, GeneratedPriceType.DeletedItems);
+                                
                 var count = newPriceLoadResult.PriceLines.Count() - 1; // заголовок не считаем
-                Log.Info(string.Format("Обработано {0} позиций. Товары: {1} обновлённых, {2} новых, {3} удалённых", count, result.Item1, result.Item2, result.Item3));
+                Log.Info(string.Format("Обработано {0} позиций. Товары: {1} обновлённых, {2} удалённых", count, diff.UpdatedItems.Count, diff.DeletedItems.Count));
 
                 if (diff.DeletedItems.Any() || diff.NewItems.Any() || diff.UpdatedItems.Any())
                 {
@@ -134,15 +134,35 @@ namespace Supplier2Presta.Service
             {
                 var diff = GetDiff(priceFormat, newPriceLoadResult.PriceLines, oldPriceLoadResult.PriceLines);
                 
-                diff.UpdatedItems.Clear(); // обновлённые уже процессились выше отдельно, нас интересуют только новые и удалённые
+                var newItems = new Dictionary<string, PriceItem>();
+                if (NewProducts.Any())
+                {
+                    foreach (var item in NewProducts)
+                    {
+                        if (diff.NewItems.ContainsKey(item.Reference))
+                        {
+                            newItems.Add(item.Reference, diff.NewItems[item.Reference]);
+                        }
+                    }
+                    diff.NewItems = newItems;
+                }
+
+                if (diff.NewItems.Any())
+                {
+                    NewProducts.AddRange(diff.NewItems.Values);
+                }
                 
-                var result = Load(diff);
+                IProcessor processor = new PriceWebServiceProcessor();
+                processor.Process(diff.NewItems, GeneratedPriceType.NewItems);
+                processor.Process(diff.DeletedItems, GeneratedPriceType.DeletedItems);
+
                 var count = newPriceLoadResult.PriceLines.Count() - 1; // заголовок не считаем
 
-                Log.Info(string.Format("Обработано {0} позиций. Товары: {1} обновлённых, {2} новых, {3} удалённых", count, result.Item1, result.Item2, result.Item3));
-
-                SetLastPrice(newPriceLoadResult.FilePath, archiveDir);
-
+                Log.Info(string.Format("Обработано {0} позиций. Товары: {1} новых, {2} удалённых", count, diff.NewItems.Count, diff.DeletedItems.Count));
+                if (diff.NewItems.Any() || diff.DeletedItems.Any())
+                {
+                    SetLastPrice(newPriceLoadResult.FilePath, archiveDir);
+                }
                 return Ok;
             }
             catch (Exception ex)
@@ -160,27 +180,7 @@ namespace Supplier2Presta.Service
 
             Log.Debug("Построение диффа");
             var diff = differ.GetDiff(newPriceLines, oldPriceLines);
-            totalCount = diff.DeletedItems.Count + diff.NewItems.Count + diff.UpdatedItems.Count;
             return diff;
-        }
-
-        private static Tuple<int, int, int> Load(Diff diff)
-        {
-            var task = new Task<Tuple<int, int, int>>(
-                () =>
-                {
-                    IProcessor processor = new PriceWebServiceProcessor();
-                    processor.OnProductProcessed += OnProductProcessed;
-                    processor.OnNewProduct += OnNewProduct;
-
-                    return processor.Process(diff);
-                });
-
-            task.Start();
-
-            var result = task.Result;
-
-            return new Tuple<int,int,int>(result.Item1, result.Item2, result.Item3);
         }
 
         private static PriceFormat GetPriceFormat(string priceFormatFile)
@@ -198,42 +198,6 @@ namespace Supplier2Presta.Service
         {
             var file = Path.GetFileName(newPricePath);
             File.Move(newPricePath, archiveDirectory + "\\" + file);
-        }
-
-        private static void OnProductProcessed(string info, GeneratedPriceType currentGeneratedPriceType)
-        {
-            var priceTypeCategory = string.Empty;
-            switch (currentGeneratedPriceType)
-            {
-                case GeneratedPriceType.None:
-                    break;
-                case GeneratedPriceType.NewItems:
-                    priceTypeCategory = "Новые";
-                    currentCount++;
-                    break;
-                case GeneratedPriceType.DeletedItems:
-                    priceTypeCategory = "Удалённые";
-                    currentCount++;
-                    break;
-                case GeneratedPriceType.SameItems:
-                    priceTypeCategory = "Остатки";
-                    currentCount++;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("currentGeneratedPriceType");
-            }
-
-            string text = string.IsNullOrEmpty(priceTypeCategory)
-                ? string.Format("{0}{1}", info, Environment.NewLine)
-                : string.Format("Категория: {0}   |  Счётчик {1} из {2}  |  {3}{4}", priceTypeCategory, currentCount, totalCount, info, Environment.NewLine);
-
-            Log.Debug(text);
-        }
-
-        private static void OnNewProduct(PriceItem item)
-        {
-            Log.Info("Продукт не существует и будет добавлен: {0}", item.ToString("Артикул: {{Reference}};"));
-            NewProducts.Add(item);
         }
     }
 }
