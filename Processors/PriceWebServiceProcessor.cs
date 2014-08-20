@@ -18,12 +18,10 @@ namespace Supplier2Presta.Service.Processors
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         
-        private readonly IDiffer differ;
         private readonly ShopApiFactory apiFactory;
 
-        public PriceWebServiceProcessor(IDiffer differ)
+        public PriceWebServiceProcessor()
         {
-            this.differ = differ;
             this.apiFactory = new ShopApiFactory();
         }
 
