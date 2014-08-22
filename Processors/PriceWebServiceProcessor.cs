@@ -36,7 +36,6 @@ namespace Supplier2Presta.Service.Processors
         
         private void ProcessDiff(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType)
         {
-            var priceTypeCategory = string.Empty;
             int currentCount = 0;
 
             foreach (var item in priceItems.Values)
@@ -48,11 +47,11 @@ namespace Supplier2Presta.Service.Processors
                 switch (generatedPriceType)
                 {
                     case GeneratedPriceType.NewItems:
-                        priceTypeCategory = "Новые";
                         if (existingProd == null || !existingProd.Any())
                         {
                             try
                             {
+                                Log.Debug("Добавление продукта {0} из {1}; Артикул: {2}", currentCount, priceItems.Count, item.Reference);
                                 AddNewProduct(item);
                             }
                             catch (Exception ex)
@@ -64,6 +63,7 @@ namespace Supplier2Presta.Service.Processors
                         {
                             try
                             {
+                                Log.Debug("Обновление продукта {0} из {1}; Артикул: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.UpdateProductBalance(item, existingProd.First());
                                 this.UpdateProductPriceAndActivity(item, existingProd.First());
                             }
@@ -74,7 +74,6 @@ namespace Supplier2Presta.Service.Processors
                         }
                         break;
                     case GeneratedPriceType.SameItems:
-                        priceTypeCategory = "Остатки";
                         if (existingProd == null || !existingProd.Any())
                         {
                             Log.Warn("Продукт не существует. Он будет добавлен позже. Артикул: {0}", item.ToString("{{Reference}};"));
@@ -83,6 +82,7 @@ namespace Supplier2Presta.Service.Processors
                         {
                             try
                             {
+                                Log.Debug("Обновление остатков {0} из {1}; Артикул: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.UpdateProductBalance(item, existingProd.First());
                                 this.UpdateProductPriceAndActivity(item, existingProd.First());
                             }
@@ -94,11 +94,11 @@ namespace Supplier2Presta.Service.Processors
 
                         break;
                     case GeneratedPriceType.DeletedItems:
-                        priceTypeCategory = "Удалённые";
                         if (existingProd != null && existingProd.Any())
                         {
                             try
                             {
+                                Log.Debug("Выключение продукта {0} из {1}; Артикул: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.DisableProduct(existingProd.First());
                             }
                             catch (Exception ex)
@@ -108,8 +108,6 @@ namespace Supplier2Presta.Service.Processors
                         }
                         break;
                 }
-
-                Log.Debug("Категория: {0}   |  Счётчик {1} из {2}  |  Артикул: {3}", priceTypeCategory, currentCount, priceItems.Count, item.Reference);                
             }
         }
 
@@ -137,7 +135,6 @@ namespace Supplier2Presta.Service.Processors
 
         private void AddNewProduct(PriceItem priceItem)
         {
-            Log.Info("Добавление продукта. Артикул: {0}", priceItem.ToString("{{Reference}};"));
             var product = ProductsMapper.Create(priceItem);
 
             var category = this.GetCategoryValue(priceItem);

@@ -26,7 +26,7 @@ namespace Supplier2Presta.Service
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private static List<PriceItem> NewProducts = new List<PriceItem>();
+        private static bool _newProductsAppeared;
         
         private static readonly string _priceEncoding;
         private static readonly string _archiveDirectory;
@@ -65,7 +65,7 @@ namespace Supplier2Presta.Service
             }
 
             var forceFull = args != null && args.Count() > 0 && args[0] == "full";
-            if (!NewProducts.Any() && !forceFull)
+            if (!_newProductsAppeared && !forceFull)
             {
                 return result;
             }
@@ -89,6 +89,7 @@ namespace Supplier2Presta.Service
             try
             {
                 var diff = GetDiff(priceFormat, newPriceLoadResult.PriceLines, oldPriceLoadResult.PriceLines);
+                _newProductsAppeared = diff.NewItems.Any();
 
                 IProcessor processor = new PriceWebServiceProcessor();
                 processor.Process(diff.UpdatedItems, GeneratedPriceType.SameItems);
@@ -135,22 +136,6 @@ namespace Supplier2Presta.Service
                 var diff = GetDiff(priceFormat, newPriceLoadResult.PriceLines, oldPriceLoadResult.PriceLines);
                 
                 var newItems = new Dictionary<string, PriceItem>();
-                if (NewProducts.Any())
-                {
-                    foreach (var item in NewProducts)
-                    {
-                        if (diff.NewItems.ContainsKey(item.Reference))
-                        {
-                            newItems.Add(item.Reference, diff.NewItems[item.Reference]);
-                        }
-                    }
-                    diff.NewItems = newItems;
-                }
-
-                if (diff.NewItems.Any())
-                {
-                    NewProducts.AddRange(diff.NewItems.Values);
-                }
                 
                 IProcessor processor = new PriceWebServiceProcessor();
                 processor.Process(diff.NewItems, GeneratedPriceType.NewItems);
