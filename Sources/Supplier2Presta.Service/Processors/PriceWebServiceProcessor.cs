@@ -199,8 +199,6 @@ namespace Supplier2Presta.Service.Processors
             }
             // Добавление продукта
             product = this.apiFactory.ProductFactory.Add(product);
-            
-            this.GetProductSupplierValue(priceItem, product, supplier);
 
             var image1 = this.GetImageValue(priceItem.Photo1, product);
             product = ProductsMapper.MapImage(product, image1);
@@ -217,12 +215,15 @@ namespace Supplier2Presta.Service.Processors
             var image5 = this.GetImageValue(priceItem.Photo5, product);
             product = ProductsMapper.MapImage(product, image5);
 
-            if(!product.associations.images.Any())
+			if(product.associations.images == null || !product.associations.images.Any())
             {
                 Log.Fatal("Unable to load product photos. Adding new products aborted. Product reference: {0}", priceItem.Reference);
                 this.apiFactory.ProductFactory.Delete(product.id.Value);
+				Log.Debug("Product deleted. Reference: {0}", priceItem.Reference);
                 throw new ProcessAbortedException();
             }
+
+			this.GetProductSupplierValue(priceItem, product, supplier);
 
             this.UpdateProductBalance(priceItem, product);
         }
