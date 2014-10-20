@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Supplier2Presta.Service.Loaders
+namespace Supplier2Presta.Service.Entities.XmlPrice
 {
-    public enum PriceLoadResultType
+    public interface IPriceXmlItem
     {
-        Ok = 0,
-        PriceFileIsNotExists = -1,
+        List<XmlItem> Items { get; set; }
     }
 }

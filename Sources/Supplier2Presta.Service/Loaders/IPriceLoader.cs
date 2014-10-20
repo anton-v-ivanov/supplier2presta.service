@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Supplier2Presta.Service.Entities.XmlPrice;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace Supplier2Presta.Service.Loaders
 {
     public interface IPriceLoader
     {
-        PriceLoadResult Load(string uri, string encoding);
+        PriceLoadResult Load<T>(string uri);
     }
 }

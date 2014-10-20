@@ -8,42 +8,9 @@ namespace Supplier2Presta.Service.Diffs
 {
     public class Differ : IDiffer
     {
-        private readonly IPriceItemBuilder builder;
-
-        public Differ(IPriceItemBuilder builder)
+        public Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds)
         {
-            this.builder = builder;
-        }
-
-        public Diff GetDiff(List<string> newLines, List<string> oldLines)
-        {
-            var localLines = newLines.Skip(1).ToList(); // пропуск строки с заголовками
-            
-            var newItems = localLines.Select(this.builder.Build);
-            
-            var newProds = new Dictionary<string, PriceItem>();
-            foreach (var item in newItems)
-            {
-                if (!newProds.ContainsKey(item.Reference))
-                {
-                    newProds.Add(item.Reference, item);
-                }
-            }
-
-            var oldProds = new Dictionary<string, PriceItem>();
-            if (oldLines != null)
-            {
-                localLines = oldLines.Skip(1).ToList(); // пропуск строки с заголовками
-
-                var oldItems = localLines.Select(this.builder.Build);
-                foreach (var item in oldItems)
-                {
-                    if (!oldProds.ContainsKey(item.Reference))
-                    {
-                        oldProds.Add(item.Reference, item);
-                    }
-                }
-            }
+            oldProds = oldProds ?? new Dictionary<string, PriceItem>();
 
             var diff = new Diff 
             { 

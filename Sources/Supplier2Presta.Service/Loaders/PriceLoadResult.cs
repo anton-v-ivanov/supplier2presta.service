@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Supplier2Presta.Service.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,21 +9,21 @@ namespace Supplier2Presta.Service.Loaders
 {
     public class PriceLoadResult
     {
-        public PriceLoadResultType Result { get; private set; }
-        public List<string> PriceLines { get; private set; }
+        public bool Success { get; set; }
+        public Dictionary<string, PriceItem> PriceItems { get; private set; }
         public string FilePath { get; private set; }
 
-        public PriceLoadResult(List<string> priceLines, string filePath, PriceLoadResultType result)
+        public PriceLoadResult(Dictionary<string, PriceItem> priceItems, string filePath, bool success)
         {
-            PriceLines = priceLines;
+            PriceItems = priceItems;
             FilePath = filePath;
-            Result = result;
+            Success = success;
         }
 
-        public PriceLoadResult(List<string> priceLines, PriceLoadResultType result)
+        public PriceLoadResult(Dictionary<string, PriceItem> priceItems, bool success)
         {
-            PriceLines = priceLines;
-            Result = result;
+            PriceItems = priceItems;
+            Success = success;
         }
     }
 }

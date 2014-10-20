@@ -19,18 +19,22 @@ namespace Supplier2Presta.Service.Processors
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         
-        private readonly ShopApiFactory apiFactory;
+        private readonly ShopApiFactory _apiFactory;
+        private string _apiUrl;
+        private string _accessToken;
 
-        public PriceWebServiceProcessor()
+        public PriceWebServiceProcessor(string apiUrl, string accessToken)
         {
-            this.apiFactory = new ShopApiFactory();
+            _apiFactory = new ShopApiFactory();
+            _apiUrl = apiUrl;
+            _accessToken = accessToken;
         }
 
         public void Process(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType)
         {
             Log.Debug("Connecting to API");
 
-            this.apiFactory.InitFactories("http://dirty-dreams.ru/api", "4MFF2R1ZFA4DXSYLDSKP8MK7V7W83KWL");
+            _apiFactory.InitFactories(_apiUrl, _accessToken);
 
             ProcessDiff(priceItems, generatedPriceType);
         }
@@ -43,7 +47,7 @@ namespace Supplier2Presta.Service.Processors
             {
                 currentCount++;
                 var filter = new Dictionary<string, string> { { "reference", item.Reference } };
-                var existingProd = this.apiFactory.ProductFactory.GetByFilter(filter, null, null);
+                var existingProd = _apiFactory.ProductFactory.GetByFilter(filter, null, null);
 
                 switch (generatedPriceType)
                 {
@@ -134,7 +138,7 @@ namespace Supplier2Presta.Service.Processors
             if (stock.quantity != priceItem.Balance)
             {
                 stock.quantity = priceItem.Balance;
-                this.apiFactory.StockFactory.Update(stock);
+                _apiFactory.StockFactory.Update(stock);
             }
         }
 
@@ -146,7 +150,7 @@ namespace Supplier2Presta.Service.Processors
                 product.price = Convert.ToDecimal(priceItem.RetailPrice);
                 product.wholesale_price = Convert.ToDecimal(priceItem.WholesalePrice);
                 product.active = Convert.ToInt32(priceItem.Active);
-                this.apiFactory.ProductFactory.Update(product);
+                _apiFactory.ProductFactory.Update(product);
             }
         }
 
@@ -157,31 +161,31 @@ namespace Supplier2Presta.Service.Processors
             var category = this.GetCategoryValue(priceItem);
             product = ProductsMapper.MapCategory(product, category);
 
-            var supplier = this.apiFactory.Suppliers.First(s => s.name.Equals(priceItem.SupplierName, StringComparison.CurrentCultureIgnoreCase));
+            var supplier = _apiFactory.Suppliers.First(s => s.name.Equals(priceItem.SupplierName, StringComparison.CurrentCultureIgnoreCase));
             product = ProductsMapper.MapSupplier(product, supplier);
 
-            var featureValue = this.GetFeatureValue(priceItem.Size, this.apiFactory.SizeFeature);
+            var featureValue = this.GetFeatureValue(priceItem.Size, _apiFactory.SizeFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = this.GetFeatureValue(priceItem.Color, this.apiFactory.ColorFeature);
+            featureValue = this.GetFeatureValue(priceItem.Color, _apiFactory.ColorFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = this.GetFeatureValue(priceItem.Material, this.apiFactory.MaterialFeature);
+            featureValue = this.GetFeatureValue(priceItem.Material, _apiFactory.MaterialFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = this.GetFeatureValue(priceItem.Country, this.apiFactory.CountryFeature);
+            featureValue = this.GetFeatureValue(priceItem.Country, _apiFactory.CountryFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = this.GetFeatureValue(priceItem.Packing, this.apiFactory.PackingFeature);
+            featureValue = this.GetFeatureValue(priceItem.Packing, _apiFactory.PackingFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = this.GetFeatureValue(priceItem.Length, this.apiFactory.LengthFeature);
+            featureValue = this.GetFeatureValue(priceItem.Length, _apiFactory.LengthFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = this.GetFeatureValue(priceItem.Diameter, this.apiFactory.DiameterFeature);
+            featureValue = this.GetFeatureValue(priceItem.Diameter, _apiFactory.DiameterFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
-            featureValue = this.GetFeatureValue(priceItem.Battery, this.apiFactory.BatteryFeature);
+            featureValue = this.GetFeatureValue(priceItem.Battery, _apiFactory.BatteryFeature);
             product = ProductsMapper.MapFeature(product, featureValue);
 
             var manufacturerValue = this.GetManufacturerValue(priceItem, product);
@@ -198,7 +202,7 @@ namespace Supplier2Presta.Service.Processors
                 }
             }
             // Добавление продукта
-            product = this.apiFactory.ProductFactory.Add(product);
+            product = _apiFactory.ProductFactory.Add(product);
 
             var image1 = this.GetImageValue(priceItem.Photo1, product);
             product = ProductsMapper.MapImage(product, image1);
@@ -218,7 +222,7 @@ namespace Supplier2Presta.Service.Processors
 			if(product.associations.images == null || !product.associations.images.Any())
             {
                 Log.Fatal("Unable to load product photos. Adding new products aborted. Product reference: {0}", priceItem.Reference);
-                this.apiFactory.ProductFactory.Delete(product.id.Value);
+                _apiFactory.ProductFactory.Delete(product.id.Value);
 				Log.Debug("Product deleted. Reference: {0}", priceItem.Reference);
                 throw new ProcessAbortedException();
             }
@@ -231,7 +235,7 @@ namespace Supplier2Presta.Service.Processors
         private manufacturer GetManufacturerValue(PriceItem priceItem, product product)
         {
             var filter = new Dictionary<string, string> { { "name", priceItem.Manufacturer } };
-            var manufacturers = this.apiFactory.ManufacturerFactory.GetByFilter(filter, null, null);
+            var manufacturers = _apiFactory.ManufacturerFactory.GetByFilter(filter, null, null);
 
             if (manufacturers == null || !manufacturers.Any())
             {
@@ -240,7 +244,7 @@ namespace Supplier2Presta.Service.Processors
                     name = priceItem.Manufacturer,
                     active = 1,
                 };
-                return this.apiFactory.ManufacturerFactory.Add(manufacturer);
+                return _apiFactory.ManufacturerFactory.Add(manufacturer);
             }
             return manufacturers.First();
         }
@@ -252,7 +256,7 @@ namespace Supplier2Presta.Service.Processors
                 { "id_product", product.id.Value.ToString(CultureInfo.InvariantCulture) }
             };
 
-            var supplier = this.apiFactory.ProductSupplierFactory.GetByFilter(filter, null, null).FirstOrDefault();
+            var supplier = _apiFactory.ProductSupplierFactory.GetByFilter(filter, null, null).FirstOrDefault();
             if (supplier == null)
             {
                 supplier = new product_supplier
@@ -264,7 +268,7 @@ namespace Supplier2Presta.Service.Processors
                     product_supplier_reference = priceItem.SupplierReference,
                     product_supplier_price_te = Convert.ToDecimal(priceItem.WholesalePrice)
                 };
-                supplier = this.apiFactory.ProductSupplierFactory.Add(supplier);
+                supplier = _apiFactory.ProductSupplierFactory.Add(supplier);
             }
 
             return supplier;
@@ -282,7 +286,7 @@ namespace Supplier2Presta.Service.Processors
                 try
                 {
                     var bytes = client.DownloadData(url);
-                    return this.apiFactory.ImageFactory.AddProductImage(product.id.Value, bytes);
+                    return _apiFactory.ImageFactory.AddProductImage(product.id.Value, bytes);
                 }
                 catch (Exception ex)
                 {
@@ -296,7 +300,7 @@ namespace Supplier2Presta.Service.Processors
         {
             var filter = new Dictionary<string, string> { { "name", priceItem.Category } };
 
-            return this.apiFactory.CategoryFactory.GetByFilter(filter, null, null).First();
+            return _apiFactory.CategoryFactory.GetByFilter(filter, null, null).First();
         }
 
         private product_feature_value GetFeatureValue(string value, product_feature feature)
@@ -308,7 +312,7 @@ namespace Supplier2Presta.Service.Processors
 
             var filter = new Dictionary<string, string> { { "id_feature", feature.id.Value.ToString(CultureInfo.InvariantCulture) }, { "value", value }, };
 
-            var featureValues = this.apiFactory.FeatureValuesFactory.GetByFilter(filter, null, null);
+            var featureValues = _apiFactory.FeatureValuesFactory.GetByFilter(filter, null, null);
             product_feature_value featureValue;
             if (featureValues == null || !featureValues.Any())
             {
@@ -317,7 +321,7 @@ namespace Supplier2Presta.Service.Processors
                     id_feature = feature.id,
                     value = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, value) }
                 };
-                featureValue = this.apiFactory.FeatureValuesFactory.Add(featureValue);
+                featureValue = _apiFactory.FeatureValuesFactory.Add(featureValue);
             }
             else
             {
@@ -334,7 +338,7 @@ namespace Supplier2Presta.Service.Processors
                 { "id_product", product.id.Value.ToString(CultureInfo.InvariantCulture) }
             };
 
-            var stock = this.apiFactory.StockFactory.GetByFilter(filter, null, null).FirstOrDefault();
+            var stock = _apiFactory.StockFactory.GetByFilter(filter, null, null).FirstOrDefault();
             if (stock == null)
             {
                 stock = new stock_available
@@ -342,7 +346,7 @@ namespace Supplier2Presta.Service.Processors
                     id_product = product.id,
                     quantity = priceItem.Balance
                 };
-                stock = this.apiFactory.StockFactory.AddList(new List<stock_available> { stock }).First();
+                stock = _apiFactory.StockFactory.AddList(new List<stock_available> { stock }).First();
             }
 
             return stock;
@@ -351,7 +355,7 @@ namespace Supplier2Presta.Service.Processors
         private void DisableProduct(product product)
         {
             product.active = 0;
-            this.apiFactory.ProductFactory.Update(product);
+            _apiFactory.ProductFactory.Update(product);
         }
     }
 }

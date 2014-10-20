@@ -2,8 +2,8 @@
 
 namespace Supplier2Presta.Service.PriceItemBuilders
 {
-    public interface IPriceItemBuilder
+    public interface IPriceItemBuilder<T>
     {
-        PriceItem Build(string line);
+        PriceItem Build(T fileItem);
     }
 }

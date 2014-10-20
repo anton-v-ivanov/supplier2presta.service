@@ -55,27 +55,44 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\MultiplicatorRuleElement.cs" />
+    <Compile Include="Config\MultiplicatorsElementCollection.cs" />
+    <Compile Include="Config\RobotSettings.cs" />
+    <Compile Include="Config\RobotSettingsSection.cs" />
+    <Compile Include="Config\SupplierElement.cs" />
+    <Compile Include="Config\SuppliersElementCollection.cs" />
     <Compile Include="Diffs\Diff.cs" />
     <Compile Include="Diffs\Differ.cs" />
     <Compile Include="Diffs\IDiffer.cs" />
     <Compile Include="Entities\Exceptions\ProcessAbortedException.cs" />
     <Compile Include="Entities\GeneratedPriceType.cs" />
+    <Compile Include="Entities\XmlPrice\FullXmlItemList.cs" />
+    <Compile Include="Entities\XmlPrice\IPriceXmlItem.cs" />
     <Compile Include="Entities\PriceFormat.cs" />
     <Compile Include="Entities\PriceItem.cs" />
     <Compile Include="Entities\PriceType.cs" />
     <Compile Include="Entities\EventDelegates.cs" />
+    <Compile Include="Entities\PriceUpdateResult.cs" />
+    <Compile Include="Entities\XmlPrice\StockXmlItemList.cs" />
+    <Compile Include="Entities\XmlPrice\XmlItem.cs" />
     <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Helpers\ProductsMapper.cs" />
     <Compile Include="Helpers\StringExtensions.cs" />
+    <Compile Include="Loaders\XmlPriceLoader.cs" />
     <Compile Include="Loaders\NewestFileSystemPriceLoader.cs" />
     <Compile Include="Loaders\InternetPriceLoader.cs" />
     <Compile Include="Loaders\IPriceLoader.cs" />
-    <Compile Include="Loaders\PriceLoaderDecoratorBase.cs" />
+    <Compile Include="Loaders\CsvPriceLoader.cs" />
     <Compile Include="Loaders\PriceLoadResult.cs" />
-    <Compile Include="Loaders\PriceLoadResultType.cs" />
-    <Compile Include="PriceItemBuilders\HappinnessPriceItemBuilder.cs" />
+    <Compile Include="Managers\HappinesCsvPriceManager.cs" />
+    <Compile Include="Managers\HappinesXmlPriceManager.cs" />
+    <Compile Include="Managers\IPriceManager.cs" />
+    <Compile Include="Managers\PriceManagerBase.cs" />
+    <Compile Include="Multiplicators\IRetailPriceBuilder.cs" />
+    <Compile Include="Multiplicators\RetailPriceBuilder.cs" />
+    <Compile Include="PriceItemBuilders\CsvHappinnessPriceItemBuilder.cs" />
     <Compile Include="PriceItemBuilders\IPriceItemBuilder.cs" />
-    <Compile Include="PriceItemBuilders\PriceItemBuilderBase.cs" />
+    <Compile Include="PriceItemBuilders\XmlHappinnessPriceItemBuilder.cs" />
     <Compile Include="Processors\IProcessor.cs" />
     <Compile Include="Processors\PriceWebServiceProcessor.cs" />
     <Compile Include="Processors\ShopApiFactory.cs" />
@@ -94,6 +111,7 @@
     </Content>
     <Content Include="happiness_short.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
