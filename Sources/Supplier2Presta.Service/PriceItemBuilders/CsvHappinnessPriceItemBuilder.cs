@@ -78,7 +78,9 @@ namespace Supplier2Presta.Service.PriceItemBuilders
             result.Name = this.PriceFormat.Name > -1 ? columns[this.PriceFormat.Name].Value.Trim(new[] { '"', ';' }).MakeSafeName() : string.Empty;
             result.SupplierName = "happiness";
             result.Reference = "200" + columns[this.PriceFormat.Reference].Value.Trim(new[] { '"', ';' });
-            result.Category = this.GetCategoryName(columns);
+            var categories = this.GetCategoryName(columns);
+            result.RootCategory = categories.Item1;
+            result.Category = categories.Item2;
             result.Active = this.PriceFormat.Active > -1 ? Convert.ToBoolean(Convert.ToInt32(columns[this.PriceFormat.Active].Value.Trim(new[] { '"', ';' }))) : true;
             result.Battery = this.PriceFormat.Battery > -1 ? columns[this.PriceFormat.Battery].Value.Trim(new[] { '"', ';', ' ' }).FirstLetterToUpper().CapitalizeEnglish() : string.Empty;
             result.Photo2 = this.PriceFormat.Photo2 > -1 ? columns[this.PriceFormat.Photo2].Value.Trim(new[] { '"', ';' }) : string.Empty;
@@ -95,10 +97,15 @@ namespace Supplier2Presta.Service.PriceItemBuilders
             return result;
         }
 
-        private string GetCategoryName(MatchCollection columns)
+        /// <summary>
+        /// Return root and main category
+        /// </summary>
+        /// <param name="columns"></param>
+        /// <returns>Returns Tuple<rootCategory, mainCategory></returns>
+        private Tuple<string, string> GetCategoryName(MatchCollection columns)
         {
             if (this.PriceFormat.Category1 < 0)
-                return string.Empty;
+                return Tuple.Create<string, string>(string.Empty, string.Empty);
 
             var parent = columns[this.PriceFormat.Category1].Value.Trim(new[] { '"', ';' }).FirstLetterToUpper();
             if (this.PriceFormat.Category2 > -1)
@@ -112,20 +119,20 @@ namespace Supplier2Presta.Service.PriceItemBuilders
 
                 if (!string.IsNullOrWhiteSpace(child2))
                 {
-                    return child2;
+                    return Tuple.Create<string, string>(child1, child2);
                 }
 
                 if (!string.IsNullOrWhiteSpace(child1))
                 {
-                    return child1;
+                    return Tuple.Create<string, string>(parent, child1);
                 }
             }
             if (!string.IsNullOrWhiteSpace(parent))
             {
-                return parent;
+                return Tuple.Create<string, string>(parent, parent);
             }
 
-            return string.Empty;
+            return Tuple.Create<string, string>(string.Empty, string.Empty);
         }
     }
 }

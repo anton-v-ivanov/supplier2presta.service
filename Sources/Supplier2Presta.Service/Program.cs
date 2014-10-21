@@ -60,7 +60,7 @@ namespace Supplier2Presta.Service
                         break;
                 
                     default:
-                        throw new ConfigurationException("There is no price manager for file with extension " + Path.GetExtension(_newPriceUrl));
+                        throw new ConfigurationErrorsException("There is no price manager for file with extension " + Path.GetExtension(_newPriceUrl));
                 }
             }
             catch (Exception ex)

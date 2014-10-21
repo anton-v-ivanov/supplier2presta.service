@@ -16,6 +16,8 @@ namespace Supplier2Presta.Service.Entities
         
         public float RetailPrice { get; set; }
 
+        public string RootCategory { get; set; }
+
         public string Category { get; set; }
 
         public string ShortDescription { get; set; }

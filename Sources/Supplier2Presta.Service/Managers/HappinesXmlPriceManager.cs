@@ -24,7 +24,7 @@ namespace Supplier2Presta.Service.Managers
         {
             var xmlPriceLoader = new XmlPriceLoader();
             var oldPriceLoader = new NewestFileSystemPriceLoader(xmlPriceLoader);
-            var newPriceLoader = new InternetPriceLoader(xmlPriceLoader);
+            var newPriceLoader = new SingleFilePriceLoader(xmlPriceLoader);
 
             var newPriceLoadResult = newPriceLoader.Load<StockXmlItemList>(priceUrl);
             if (!newPriceLoadResult.Success)
@@ -44,7 +44,7 @@ namespace Supplier2Presta.Service.Managers
 
             var xmlPriceLoader = new XmlPriceLoader();
             var oldPriceLoader = new NewestFileSystemPriceLoader(xmlPriceLoader);
-            var newPriceLoader = new InternetPriceLoader(xmlPriceLoader);
+            var newPriceLoader = new SingleFilePriceLoader(xmlPriceLoader);
 
             var newPriceLoadResult = newPriceLoader.Load<FullXmlItemList>(priceUrl);
             if (!newPriceLoadResult.Success)

@@ -68,6 +68,7 @@ namespace Supplier2Presta.Service.Entities.XmlPrice
         /// Адреса больших картинок до 1200*1200 пикселей
         /// </summary>
         [XmlArray("pictures")]
+        [XmlArrayItem("picture")]
         public List<string> Pictures { get; set; }
 
         /// <summary>
@@ -92,15 +93,6 @@ namespace Supplier2Presta.Service.Entities.XmlPrice
         [XmlElement("subName")]
         public string SubName { get; set; }
     }
-
-    //[Serializable]
-    //public class XmlPictures
-    //{
-    //    /// <summary>
-    //    /// url большой картинки
-    //    /// </summary>
-    //    public string Picture { get;set; }
-    //}
 
     [Serializable]
     public class XmlAssort

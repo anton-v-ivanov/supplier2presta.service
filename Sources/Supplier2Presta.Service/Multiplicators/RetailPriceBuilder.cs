@@ -25,19 +25,19 @@ namespace Supplier2Presta.Service.Multiplicators
             var referenceElement = elements.FirstOrDefault(e => e.ProductReference.Equals(priceItem.Reference, StringComparison.OrdinalIgnoreCase));
             if(referenceElement != null)
             {
-                return priceItem.RetailPrice * referenceElement.Value;
+                return priceItem.WholesalePrice * referenceElement.Value;
             }
 
-            var categoryElement = elements.FirstOrDefault(e => e.Category.Equals(priceItem.Category, StringComparison.OrdinalIgnoreCase));
+            var categoryElement = elements.FirstOrDefault(e => e.Category.Equals(priceItem.Category, StringComparison.OrdinalIgnoreCase) || e.Category.Equals(priceItem.RootCategory, StringComparison.OrdinalIgnoreCase));
             if (categoryElement != null)
             {
-                return priceItem.RetailPrice * categoryElement.Value;
+                return priceItem.WholesalePrice * categoryElement.Value;
             }
 
-            var minMaxPriceElement = elements.FirstOrDefault(e => e.MinPrice <= priceItem.RetailPrice && priceItem.RetailPrice <= e.MaxPrice);
+            var minMaxPriceElement = elements.FirstOrDefault(e => e.MinPrice <= priceItem.WholesalePrice && priceItem.WholesalePrice <= e.MaxPrice);
             if (minMaxPriceElement != null)
             {
-                return priceItem.RetailPrice * minMaxPriceElement.Value;
+                return priceItem.WholesalePrice * minMaxPriceElement.Value;
             }
 
             return result * _multiplicators.Default;

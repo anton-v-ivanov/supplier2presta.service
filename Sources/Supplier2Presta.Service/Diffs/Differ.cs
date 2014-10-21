@@ -23,8 +23,7 @@ namespace Supplier2Presta.Service.Diffs
             foreach (var item in diff.UpdatedItems.Values)
             {
                 var oldItem = oldProds[item.Reference];
-                if (item.RetailPrice == oldItem.RetailPrice && item.WholesalePrice == oldItem.WholesalePrice 
-                    && item.Active == oldItem.Active && item.Balance == oldItem.Balance)
+                if (item.WholesalePrice == oldItem.WholesalePrice && item.Active == oldItem.Active && item.Balance == oldItem.Balance)
                 {
                     toRemove.Add(item.Reference);
                 }

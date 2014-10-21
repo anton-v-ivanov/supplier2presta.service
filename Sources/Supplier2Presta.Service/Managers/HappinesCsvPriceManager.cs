@@ -41,7 +41,7 @@ namespace Supplier2Presta.Service.Managers
 
             var csvPriceLoader = new CsvPriceLoader(_priceEncoding, priceFormat);
             var oldPriceLoader = new NewestFileSystemPriceLoader(csvPriceLoader);
-            var newPriceLoader = new InternetPriceLoader(csvPriceLoader);
+            var newPriceLoader = new SingleFilePriceLoader(csvPriceLoader);
 
             var newPriceLoadResult = newPriceLoader.Load<string>(priceUrl);
             if (!newPriceLoadResult.Success)
@@ -62,7 +62,7 @@ namespace Supplier2Presta.Service.Managers
 
             var csvPriceLoader = new CsvPriceLoader(_priceEncoding, priceFormat);
             var oldPriceLoader = new NewestFileSystemPriceLoader(csvPriceLoader);
-            var newPriceLoader = new InternetPriceLoader(csvPriceLoader);
+            var newPriceLoader = new SingleFilePriceLoader(csvPriceLoader);
 
             var newPriceLoadResult = newPriceLoader.Load<string>(priceUrl);
             if (!newPriceLoadResult.Success)

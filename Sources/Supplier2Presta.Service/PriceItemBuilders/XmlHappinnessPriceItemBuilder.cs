@@ -24,10 +24,10 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
                 Manufacturer = fileItem.Vendor,
                 Name = !string.IsNullOrWhiteSpace(fileItem.Name) ? fileItem.Name.MakeSafeName() : string.Empty,
                 Photo1 = fileItem.PictureSmall,
-                Photo2 = fileItem.Pictures.Count > 0 ? fileItem.Pictures[0] : string.Empty,
-                Photo3 = fileItem.Pictures.Count > 1 ? fileItem.Pictures[1] : string.Empty,
-                Photo4 = fileItem.Pictures.Count > 2 ? fileItem.Pictures[2] : string.Empty,
-                Photo5 = fileItem.Pictures.Count > 3 ? fileItem.Pictures[3] : string.Empty,
+                Photo2 = SafeGetPicture(fileItem, 0),
+                Photo3 = SafeGetPicture(fileItem, 1),
+                Photo4 = SafeGetPicture(fileItem, 2),
+                Photo5 = SafeGetPicture(fileItem, 3),
                 Reference = "200" + fileItem.Id.Trim(new[] { '"', ';' }),
                 RetailPrice = float.Parse(fileItem.Price.Trim(new[] { '"', ';' }).Replace(" ", "").Replace(",", "."), new NumberFormatInfo { NumberDecimalSeparator = "." }),
                 Size = fileItem.Assort.Size,
@@ -38,6 +38,7 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
             
             if(fileItem.Category != null)
             {
+                result.RootCategory = fileItem.Category.CatName;
                 result.Category = !string.IsNullOrWhiteSpace(fileItem.Category.SubName) ? fileItem.Category.SubName : fileItem.Category.CatName;
             }
 
@@ -64,6 +65,11 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
             }
 
             return result;
+        }
+
+        private static string SafeGetPicture(XmlItem fileItem, int index)
+        {
+            return fileItem.Pictures != null && fileItem.Pictures.Count() > index ? fileItem.Pictures[index] : string.Empty;
         }
     }
 }

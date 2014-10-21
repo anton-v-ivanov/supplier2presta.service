@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 
 namespace Supplier2Presta.Service.Entities.XmlPrice
 {
-    [XmlRoot("p5s_stock")]
+    [Serializable, XmlRoot("p5s_stock")]
     public class StockXmlItemList : IPriceXmlItem
     {
         public StockXmlItemList()
