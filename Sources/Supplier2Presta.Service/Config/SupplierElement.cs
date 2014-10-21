@@ -4,7 +4,7 @@ namespace Supplier2Presta.Service.Config
 {
     public sealed partial class SupplierElement : ConfigurationElement
     {
-        [ConfigurationPropertyAttribute("name", IsRequired = true, IsKey = true)]
+        [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
         public string Name
         {
             get
@@ -17,7 +17,7 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("stock-price-url", IsRequired = true)]
+        [ConfigurationProperty("stock-price-url", IsRequired = true)]
         public string StockPriceUrl
         {
             get
@@ -30,7 +30,7 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("full-price-url", IsRequired = true)]
+        [ConfigurationProperty("full-price-url", IsRequired = true)]
         public string FullPriceUrl
         {
             get
@@ -43,7 +43,7 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("archive-directory", IsRequired = true)]
+        [ConfigurationProperty("archive-directory", IsRequired = true)]
         public string ArchiveDirectory
         {
             get
@@ -56,7 +56,7 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("price-encoding", IsRequired = false)]
+        [ConfigurationProperty("price-encoding", IsRequired = false)]
         public string PriceEncoding
         {
             get
@@ -69,8 +69,8 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("multiplicators")]
-        [ConfigurationCollectionAttribute(typeof(MultiplicatorRuleElement), AddItemName = "rule")]
+        [ConfigurationProperty("multiplicators")]
+        [ConfigurationCollection(typeof(MultiplicatorRuleElement), AddItemName = "rule")]
         public MultiplicatorsElementCollection Multiplicators
         {
             get

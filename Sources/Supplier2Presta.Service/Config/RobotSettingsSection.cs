@@ -4,8 +4,8 @@ namespace Supplier2Presta.Service.Config
 {
     public sealed partial class RobotSettingsSection : ConfigurationSection
     {
-        [ConfigurationPropertyAttribute("suppliers")]
-        [ConfigurationCollectionAttribute(typeof(SupplierElement), AddItemName = "supplier")]
+        [ConfigurationProperty("suppliers")]
+        [ConfigurationCollection(typeof(SupplierElement), AddItemName = "supplier")]
         public SuppliersElementCollection Suppliers
         {
             get

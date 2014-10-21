@@ -4,7 +4,7 @@ namespace Supplier2Presta.Service.Config
 {
     public sealed partial class MultiplicatorRuleElement : ConfigurationElement
     {
-        [ConfigurationPropertyAttribute("name", IsRequired = true, IsKey = true)]
+        [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
         public string Name
         {
             get
@@ -17,7 +17,7 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("min-price", IsRequired = false)]
+        [ConfigurationProperty("min-price", IsRequired = false)]
         public float MinPrice
         {
             get
@@ -30,7 +30,7 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("max-price", IsRequired = false)]
+        [ConfigurationProperty("max-price", IsRequired = false)]
         public float MaxPrice
         {
             get
@@ -43,7 +43,7 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("product-reference", IsRequired = false)]
+        [ConfigurationProperty("product-reference", IsRequired = false)]
         public string ProductReference
         {
             get
@@ -56,7 +56,7 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("category", IsRequired = false)]
+        [ConfigurationProperty("category", IsRequired = false)]
         public string Category
         {
             get
@@ -69,12 +69,18 @@ namespace Supplier2Presta.Service.Config
             }
         }
 
-        [ConfigurationPropertyAttribute("value", IsRequired = true)]
+        [ConfigurationProperty("value", IsRequired = true)]
         public float Value
         {
             get
             {
-                return ((float)(this["value"]));
+                var multiplicator = ((float)(this["value"]));
+                if (multiplicator < 1 && multiplicator != 0)
+                {
+                    throw new ConfigurationErrorsException("Multiplicator must be greater than 1");
+                }
+
+                return multiplicator;
             }
             set
             {

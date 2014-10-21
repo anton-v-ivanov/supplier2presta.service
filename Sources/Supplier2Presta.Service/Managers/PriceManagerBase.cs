@@ -34,7 +34,7 @@ namespace Supplier2Presta.Service.Managers
             _differ = new Differ();
         }
 
-        public PriceUpdateResult ProcessShortPrice(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult)
+        protected PriceUpdateResult ProcessShortPrice(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult)
         {
             try
             {
@@ -87,7 +87,7 @@ namespace Supplier2Presta.Service.Managers
             }
         }
 
-        public PriceUpdateResult ProcessFullPrice(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult, string archiveDir)
+        protected PriceUpdateResult ProcessFullPrice(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult, string archiveDir)
         {
             try
             {

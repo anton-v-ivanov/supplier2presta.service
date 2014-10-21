@@ -12,8 +12,6 @@ namespace Supplier2Presta.Service.Managers
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private float? _multiplicator;
-
         public HappinesXmlPriceManager(string archiveDirectory, IRetailPriceBuilder retailPriceBuilder, string apiUrl, string apiAccessToken)
             : base(archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken)
         {

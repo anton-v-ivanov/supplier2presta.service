@@ -4,12 +4,18 @@ namespace Supplier2Presta.Service.Config
 {
     public sealed partial class MultiplicatorsElementCollection : ConfigurationElementCollection
     {
-        [ConfigurationPropertyAttribute("default", IsRequired = true)]
+        [ConfigurationProperty("default", IsRequired = true)]
         public float Default
         {
             get
             {
-                return ((float)(this["default"]));
+                var multiplicator = ((float)(this["default"]));
+                if (multiplicator < 1 && multiplicator != 0)
+                {
+                    throw new ConfigurationErrorsException("Multiplicator must be greater than 1");
+                }
+
+                return multiplicator;
             }
             set
             {
