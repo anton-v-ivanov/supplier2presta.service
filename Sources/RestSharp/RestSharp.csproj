@@ -190,7 +190,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  
-  <Target Name="AfterBuild" Condition="$(Configuration) == Release">
-  </Target>
 </Project>
