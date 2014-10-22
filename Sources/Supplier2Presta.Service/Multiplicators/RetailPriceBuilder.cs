@@ -19,6 +19,7 @@ namespace Supplier2Presta.Service.Multiplicators
 
         public float Build(PriceItem priceItem)
         {
+            float result;
             var elements = _multiplicators.Cast<MultiplicatorRuleElement>();
             
             var referenceElement = elements.FirstOrDefault(e => e.ProductReference.Equals(priceItem.Reference, StringComparison.OrdinalIgnoreCase));
@@ -26,36 +27,62 @@ namespace Supplier2Presta.Service.Multiplicators
             {
                 // 0 means leave supplier recommended price
                 if (referenceElement.Value == 0)
-                    return priceItem.RetailPrice;
-
-                return priceItem.WholesalePrice * referenceElement.Value;
+                {
+                    result = priceItem.RetailPrice;
+                }
+                else
+                {
+                    result = priceItem.WholesalePrice * referenceElement.Value;
+                }                
             }
-
-            var categoryElement = elements.FirstOrDefault(e => e.Category.Equals(priceItem.Category, StringComparison.OrdinalIgnoreCase) || e.Category.Equals(priceItem.RootCategory, StringComparison.OrdinalIgnoreCase));
-            if (categoryElement != null)
+            else
             {
-                // 0 means leave supplier recommended price
-                if (categoryElement.Value == 0)
-                    return priceItem.RetailPrice;
-
-                return priceItem.WholesalePrice * categoryElement.Value;
+                var categoryElement = elements.FirstOrDefault(e => e.Category.Equals(priceItem.Category, StringComparison.OrdinalIgnoreCase) || e.Category.Equals(priceItem.RootCategory, StringComparison.OrdinalIgnoreCase));
+                if (categoryElement != null)
+                {
+                    // 0 means leave supplier recommended price
+                    if (categoryElement.Value == 0)
+                    {
+                        result = priceItem.RetailPrice;
+                    }
+                    else
+                    {
+                        result = priceItem.WholesalePrice * categoryElement.Value;
+                    }
+                    
+                }
+                else
+                {
+                    var minMaxPriceElement = elements.FirstOrDefault(e => e.MinPrice <= priceItem.WholesalePrice && priceItem.WholesalePrice <= e.MaxPrice);
+                    if (minMaxPriceElement != null)
+                    {
+                        // 0 means leave supplier recommended price
+                        if (minMaxPriceElement.Value == 0)
+                        {
+                            result = priceItem.RetailPrice;
+                        }
+                        else
+                        {
+                            result = priceItem.WholesalePrice * minMaxPriceElement.Value;
+                        }
+                    }
+                    else
+                    {
+                        // 0 means leave supplier recommended price
+                        if (_multiplicators.Default == 0)
+                        {
+                            result = priceItem.RetailPrice;
+                        }
+                        else
+                        {
+                            result = priceItem.WholesalePrice * _multiplicators.Default;
+                        }                        
+                    }
+                }
             }
 
-            var minMaxPriceElement = elements.FirstOrDefault(e => e.MinPrice <= priceItem.WholesalePrice && priceItem.WholesalePrice <= e.MaxPrice);
-            if (minMaxPriceElement != null)
-            {
-                // 0 means leave supplier recommended price
-                if (minMaxPriceElement.Value == 0)
-                    return priceItem.RetailPrice;
-
-                return priceItem.WholesalePrice * minMaxPriceElement.Value;
-            }
-
-            // 0 means leave supplier recommended price
-            if (_multiplicators.Default == 0)
-                return priceItem.RetailPrice;
-
-            return priceItem.WholesalePrice * _multiplicators.Default;
+            result = (float)Math.Ceiling(result);
+            return result;
         }
     }
 }

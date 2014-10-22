@@ -34,12 +34,12 @@ namespace Supplier2Presta.Service.Managers
             _differ = new Differ();
         }
 
-        protected PriceUpdateResult ProcessShortPrice(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult)
+        protected PriceUpdateResult ProcessShortPrice(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult, bool forceUpdate)
         {
             try
             {
                 Log.Debug("Building the diff");
-                var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult.PriceItems);
+                var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult.PriceItems, forceUpdate);
 
                 var newProductsAppeared = diff.NewItems.Any();
 
@@ -92,7 +92,7 @@ namespace Supplier2Presta.Service.Managers
             try
             {
                 Log.Debug("Building the diff");
-                var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult.PriceItems);
+                var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult.PriceItems, false);
 
                 IProcessor processor = new PriceWebServiceProcessor(_apiUrl, _apiAccessToken);
 

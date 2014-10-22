@@ -5,6 +5,6 @@ namespace Supplier2Presta.Service.Diffs
 {
     public interface IDiffer
     {
-        Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds);
+        Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds, bool forceUpdate);
     }
 }

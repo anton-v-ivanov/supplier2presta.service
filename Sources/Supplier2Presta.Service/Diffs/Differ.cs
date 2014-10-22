@@ -8,7 +8,7 @@ namespace Supplier2Presta.Service.Diffs
 {
     public class Differ : IDiffer
     {
-        public Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds)
+        public Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds, bool forceUpdate)
         {
             oldProds = oldProds ?? new Dictionary<string, PriceItem>();
 
@@ -19,19 +19,23 @@ namespace Supplier2Presta.Service.Diffs
                 UpdatedItems = newProds.Where(kvp => oldProds.ContainsKey(kvp.Key)).ToDictionary(key => key.Key, value => value.Value)
             };
 
-            var toRemove = new List<string>();
-            foreach (var item in diff.UpdatedItems.Values)
+            // if force update flag is set, than we shold keep all the data in updated field
+            if (!forceUpdate)
             {
-                var oldItem = oldProds[item.Reference];
-                if (item.WholesalePrice == oldItem.WholesalePrice && item.Active == oldItem.Active && item.Balance == oldItem.Balance)
+                var toRemove = new List<string>();
+                foreach (var item in diff.UpdatedItems.Values)
                 {
-                    toRemove.Add(item.Reference);
+                    var oldItem = oldProds[item.Reference];
+                    if (item.WholesalePrice == oldItem.WholesalePrice && item.Active == oldItem.Active && item.Balance == oldItem.Balance)
+                    {
+                        toRemove.Add(item.Reference);
+                    }
                 }
-            }
 
-            foreach (var reference in toRemove)
-            {
-                diff.UpdatedItems.Remove(reference);
+                foreach (var reference in toRemove)
+                {
+                    diff.UpdatedItems.Remove(reference);
+                }
             }
 
             return diff;

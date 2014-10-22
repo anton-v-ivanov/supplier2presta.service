@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Bukimedia.PrestaSharp.Entities;
 
@@ -100,6 +101,25 @@ namespace Supplier2Presta.Service.Helpers
         internal static product MapManufacturer(product product, manufacturer manufacturerValue)
         {
             product.id_manufacturer = manufacturerValue.id;
+            return product;
+        }
+
+        internal static product FillMetaInfo(PriceItem priceItem, product product)
+        {
+            if (string.IsNullOrWhiteSpace(priceItem.Name))
+                return product;
+
+            product.meta_title = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, priceItem.Name) };
+            product.meta_description = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, string.Format("Купить {0} в Москве", priceItem.Name)) };
+            var words = priceItem.Name.Split(new char[] { ' ' }).Where(s => s.Length > 3);
+            if (words.Any())
+            {
+                product.meta_keywords = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language>();
+                foreach (var word in words)
+                {
+                    product.meta_keywords.Add(new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, word));
+                }
+            }
             return product;
         }
     }

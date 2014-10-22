@@ -145,13 +145,49 @@ namespace Supplier2Presta.Service.Processors
         private void UpdateProductPriceAndActivity(PriceItem priceItem, product product)
         {
             if (product.price != Convert.ToDecimal(priceItem.RetailPrice) || product.wholesale_price != Convert.ToDecimal(priceItem.WholesalePrice) 
-                || product.active != Convert.ToInt32(priceItem.Active))
+                || product.active != Convert.ToInt32(priceItem.Active)
+                || !CompareMetaInfo(priceItem, product))
             {
                 product.price = Convert.ToDecimal(priceItem.RetailPrice);
                 product.wholesale_price = Convert.ToDecimal(priceItem.WholesalePrice);
                 product.active = Convert.ToInt32(priceItem.Active);
+
+                ProductsMapper.FillMetaInfo(priceItem, product);
+
                 _apiFactory.ProductFactory.Update(product);
             }
+        }
+
+        private bool CompareMetaInfo(PriceItem priceItem, product product)
+        {
+            if (string.IsNullOrWhiteSpace(priceItem.Name))
+                return true;
+
+            if (product.meta_title == null || 
+                !product.meta_title.Any() || 
+                !product.meta_title[0].Value.Equals(priceItem.Name, StringComparison.OrdinalIgnoreCase))
+                return false;
+            
+            if (product.meta_description == null ||
+                !product.meta_description.Any() ||
+                !product.meta_description[0].Value.Equals(string.Format("Купить {0} в Москве", priceItem.Name), StringComparison.OrdinalIgnoreCase))
+                return false;
+            
+            if (product.meta_keywords == null ||
+                !product.meta_keywords.Any())
+                return false;
+            
+            var words = priceItem.Name.Split(new char[] { ' ' }).Where(s => s.Length > 3);
+            if (words.Any())
+            {
+                foreach (var word in words)
+                {
+                    if (!product.meta_keywords.Exists(s => s.Value.Equals(word, StringComparison.OrdinalIgnoreCase)))
+                        return false;
+                }
+            }
+
+            return true;
         }
 
         private void AddNewProduct(PriceItem priceItem)
@@ -191,16 +227,8 @@ namespace Supplier2Presta.Service.Processors
             var manufacturerValue = this.GetManufacturerValue(priceItem, product);
             product = ProductsMapper.MapManufacturer(product, manufacturerValue);
 
-            product.meta_description = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, string.Format("Купить {0} в Москве", priceItem.Name)) };
-            var words = priceItem.Name.Split(new char[] { ' ' }).Where(s => s.Length > 3);
-            if (words.Any())
-            {
-                product.meta_keywords = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language>();
-                foreach (var word in words)
-                {
-                    product.meta_keywords.Add(new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, word));
-                }
-            }
+            product = ProductsMapper.FillMetaInfo(priceItem, product);
+
             // Добавление продукта
             product = _apiFactory.ProductFactory.Add(product);
 

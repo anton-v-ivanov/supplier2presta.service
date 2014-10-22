@@ -18,7 +18,7 @@ namespace Supplier2Presta.Service.Managers
             _archiveDirectory = archiveDirectory;
         }
 
-        public PriceUpdateResult CheckProductsUpdates(string priceUrl)
+        public PriceUpdateResult CheckProductsUpdates(string priceUrl, bool forceUpdate)
         {
             var xmlPriceLoader = new XmlPriceLoader();
             var oldPriceLoader = new NewestFileSystemPriceLoader(xmlPriceLoader);
@@ -33,7 +33,7 @@ namespace Supplier2Presta.Service.Managers
 
             var oldPriceLoadResult = oldPriceLoader.Load<StockXmlItemList>(_archiveDirectory);
 
-            return base.ProcessShortPrice(newPriceLoadResult, oldPriceLoadResult);
+            return base.ProcessShortPrice(newPriceLoadResult, oldPriceLoadResult, forceUpdate);
         }
 
         public PriceUpdateResult CheckNewProducts(string priceUrl)

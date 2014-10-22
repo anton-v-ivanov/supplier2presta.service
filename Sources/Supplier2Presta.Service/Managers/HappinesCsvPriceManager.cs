@@ -35,7 +35,7 @@ namespace Supplier2Presta.Service.Managers
             _differ = new Differ();
         }
 
-        public PriceUpdateResult CheckProductsUpdates(string priceUrl)
+        public PriceUpdateResult CheckProductsUpdates(string priceUrl, bool forceUpdate)
         {
             var priceFormat = GetPriceFormat("happiness_short.xml");
 
@@ -52,7 +52,7 @@ namespace Supplier2Presta.Service.Managers
 
             var oldPriceLoadResult = oldPriceLoader.Load<string>(_archiveDirectory);
 
-            return base.ProcessShortPrice(newPriceLoadResult, oldPriceLoadResult);
+            return base.ProcessShortPrice(newPriceLoadResult, oldPriceLoadResult, forceUpdate);
         }
 
         public PriceUpdateResult CheckNewProducts(string priceUrl)

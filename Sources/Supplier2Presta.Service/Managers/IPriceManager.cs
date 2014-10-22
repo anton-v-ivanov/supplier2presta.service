@@ -9,7 +9,7 @@ namespace Supplier2Presta.Service.Managers
 {
     public interface IPriceManager
     {
-        PriceUpdateResult CheckProductsUpdates(string priceUrl);
+        PriceUpdateResult CheckProductsUpdates(string priceUrl, bool forceUpdate);
 
         PriceUpdateResult CheckNewProducts(string priceUrl);
     }

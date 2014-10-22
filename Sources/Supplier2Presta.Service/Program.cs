@@ -74,14 +74,22 @@ namespace Supplier2Presta.Service
         public static int Main(string[] args)
         {
             Log.Info("Price update started");
-            var result = _priceManager.CheckProductsUpdates(_newPriceUrl);
+
+            var forceFull = false;
+            var forceUpdate = false;
+            if (args != null)
+            {
+                forceFull = args.Any(s => s.Equals("full", StringComparison.OrdinalIgnoreCase));
+                forceUpdate = args.Any(s => s.Equals("forceUpdate", StringComparison.OrdinalIgnoreCase));
+            }
+
+            var result = _priceManager.CheckProductsUpdates(_newPriceUrl, forceUpdate);
             if (result.Status != PriceUpdateResultStatus.Ok && result.Status != PriceUpdateResultStatus.ProcessAborted)
             {
 				Log.Info("Price update finished. ErrorCode: " + result);
                 return Convert.ToInt32(result);
             }
 
-            var forceFull = args != null && args.Count() > 0 && args[0] == "full";
             if (!result.HasNewProducts && !forceFull)
             {
 				Log.Info("Price update finished");
