@@ -66,12 +66,12 @@
     <Compile Include="Diffs\IDiffer.cs" />
     <Compile Include="Entities\Exceptions\ProcessAbortedException.cs" />
     <Compile Include="Entities\GeneratedPriceType.cs" />
+    <Compile Include="Entities\SupplierType.cs" />
     <Compile Include="Entities\XmlPrice\FullXmlItemList.cs" />
     <Compile Include="Entities\XmlPrice\IPriceXmlItem.cs" />
     <Compile Include="Entities\PriceFormat.cs" />
     <Compile Include="Entities\PriceItem.cs" />
     <Compile Include="Entities\PriceType.cs" />
-    <Compile Include="Entities\EventDelegates.cs" />
     <Compile Include="Entities\PriceUpdateResult.cs" />
     <Compile Include="Entities\XmlPrice\StockXmlItemList.cs" />
     <Compile Include="Entities\XmlPrice\XmlItem.cs" />
@@ -88,8 +88,9 @@
     <Compile Include="Managers\HappinesXmlPriceManager.cs" />
     <Compile Include="Managers\IPriceManager.cs" />
     <Compile Include="Managers\PriceManagerBase.cs" />
-    <Compile Include="Multiplicators\IRetailPriceBuilder.cs" />
-    <Compile Include="Multiplicators\RetailPriceBuilder.cs" />
+    <Compile Include="Managers\PriceManagerBuilder.cs" />
+    <Compile Include="PriceBuilders\IRetailPriceBuilder.cs" />
+    <Compile Include="PriceBuilders\RetailPriceBuilder.cs" />
     <Compile Include="PriceItemBuilders\CsvHappinnessPriceItemBuilder.cs" />
     <Compile Include="PriceItemBuilders\IPriceItemBuilder.cs" />
     <Compile Include="PriceItemBuilders\XmlHappinnessPriceItemBuilder.cs" />
@@ -107,6 +108,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="happiness.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="happiness_sale.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="happiness_short.xml">

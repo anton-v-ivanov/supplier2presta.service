@@ -19,7 +19,7 @@ using Supplier2Presta.Service.Loaders;
 using Supplier2Presta.Service.Entities.Exceptions;
 using Supplier2Presta.Service.Managers;
 using Supplier2Presta.Service.Config;
-using Supplier2Presta.Service.Multiplicators;
+using Supplier2Presta.Service.PriceBuilders;
 
 namespace Supplier2Presta.Service
 {
@@ -27,87 +27,62 @@ namespace Supplier2Presta.Service
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private static IPriceManager _priceManager;
-        private static string _newPriceUrl;
-        private static string _fullPriceUrl;
-
-        static Program()
-        {
-            try
-            {
-                var settings = RobotSettings.Config.Suppliers[0];
-            
-                _newPriceUrl = settings.StockPriceUrl;
-                _fullPriceUrl = settings.FullPriceUrl;
-
-                var priceEncoding = settings.PriceEncoding;
-
-			    var archiveDirectory = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), settings.ArchiveDirectory);
-            
-                var apiUrl = ConfigurationManager.AppSettings["api-url"];
-                var apiAccessToken = ConfigurationManager.AppSettings["api-access-token"];
-
-                IRetailPriceBuilder retailPriceBuilder = new RetailPriceBuilder(settings.Multiplicators);
-
-                switch (Path.GetExtension(_newPriceUrl))
-                {
-                    case ".xml":
-                        _priceManager = new HappinesXmlPriceManager(archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken);
-                        break;
-                
-                    case ".csv":
-                        _priceManager = new HappinesCsvPriceManager(priceEncoding, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken);
-                        break;
-                
-                    default:
-                        throw new ConfigurationErrorsException("There is no price manager for file with extension " + Path.GetExtension(_newPriceUrl));
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex);
-                throw;
-            }
-
-        }
-
         public static int Main(string[] args)
         {
             Log.Info("Price update started");
 
-            var forceFull = false;
+            List<PriceType> updateTypes = new List<PriceType>();
             var forceUpdate = false;
             if (args != null)
             {
-                forceFull = args.Any(s => s.Equals("full", StringComparison.OrdinalIgnoreCase));
                 forceUpdate = args.Any(s => s.Equals("forceUpdate", StringComparison.OrdinalIgnoreCase));
+                var typeStr = args.FirstOrDefault(s => s.StartsWith("t:", StringComparison.OrdinalIgnoreCase));
+                if(!string.IsNullOrWhiteSpace(typeStr))
+                {
+                    var typesStr = typeStr.Replace("t:", string.Empty).Split(new []{','}, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var type in typesStr)
+	                {
+                        if(type.Equals("all", StringComparison.OrdinalIgnoreCase))
+                        {
+                            updateTypes.Clear();
+                            updateTypes.AddRange(Enum.GetValues(typeof(PriceType)).Cast<PriceType>());
+                            break;
+                        }
+
+                        var priceType = (PriceType)Enum.Parse(typeof(PriceType), type, true);
+                        if(!updateTypes.Contains(priceType))
+                            updateTypes.Add(priceType);
+	                }
+                }
+                else
+                {
+                    updateTypes.Add(PriceType.Stock);
+                }
             }
 
-            var result = _priceManager.CheckProductsUpdates(_newPriceUrl, forceUpdate);
-            if (result.Status != PriceUpdateResultStatus.Ok && result.Status != PriceUpdateResultStatus.ProcessAborted)
+            Log.Info("Update price types: {0}", string.Join(",", updateTypes.ToArray()));
+
+            var apiUrl = ConfigurationManager.AppSettings["api-url"];
+            var apiAccessToken = ConfigurationManager.AppSettings["api-access-token"];
+
+            foreach (SupplierElement settings in RobotSettings.Config.Suppliers)
             {
-				Log.Info("Price update finished. ErrorCode: " + result);
-                return Convert.ToInt32(result);
+                if (updateTypes.Contains(settings.PriceType))
+                {
+                    var priceManager = PriceManagerBuilder.Build(settings, apiUrl, apiAccessToken);
+
+                    Log.Info("Processing price: '{0}' Type: {1}", settings.Name, settings.PriceType);
+
+                    var result = priceManager.CheckUpdates(settings.PriceType, forceUpdate);
+                    if (result.Status != PriceUpdateResultStatus.Ok && result.Status != PriceUpdateResultStatus.ProcessAborted)
+                    {
+                        Log.Info("Price update finished. ErrorCode: " + result);
+                        return Convert.ToInt32(result);
+                    }
+                }
             }
-
-            if (!result.HasNewProducts && !forceFull)
-            {
-				Log.Info("Price update finished");
-                return Convert.ToInt32(result.Status);
-            }
-
-            if (result.HasNewProducts) 
-			{
-				Log.Info("There are new products is price");
-			}
-			if (forceFull) 
-			{
-				Log.Info("Full price update forced");
-			}
-
-            result = _priceManager.CheckNewProducts(_fullPriceUrl);
-			Log.Info("Price update finished");
-			return Convert.ToInt32(result.Status);
+            
+            return Convert.ToInt32(PriceUpdateResultStatus.Ok);
         }
     }
 }

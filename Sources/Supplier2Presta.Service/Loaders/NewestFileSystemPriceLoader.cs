@@ -21,6 +21,11 @@ namespace Supplier2Presta.Service.Loaders
         public PriceLoadResult Load<T>(string uri)
         {
             var directory = new DirectoryInfo(uri);
+            if (!directory.Exists)
+            {
+                directory.Create();
+            }
+
             var ext = typeof(T).Name.Contains("XmlItemList") ? "*.xml" : "*.csv";
             var oldPriceFile = directory.GetFiles(ext)
              .OrderByDescending(f => f.LastWriteTime)

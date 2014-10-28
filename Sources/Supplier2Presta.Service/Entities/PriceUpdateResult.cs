@@ -17,18 +17,10 @@ namespace Supplier2Presta.Service.Entities
     public class PriceUpdateResult
     {
         public PriceUpdateResultStatus Status { get; set; }
-
-        public bool HasNewProducts { get; set; }
         
         public PriceUpdateResult(PriceUpdateResultStatus status)
         {
             Status = status;
-        }
-
-        public PriceUpdateResult(PriceUpdateResultStatus status, bool hasNewProducts)
-        {
-            Status = status;
-            HasNewProducts = hasNewProducts;
         }
     }
 }

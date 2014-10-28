@@ -60,6 +60,10 @@ namespace Supplier2Presta.Service.Entities
 
         public string Weight { get; set; }
 
+        public bool OnSale { get; set; }
+
+        public int DiscountValue { get; set; }
+
         private string Features
         {
             get

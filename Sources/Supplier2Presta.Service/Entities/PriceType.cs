@@ -2,7 +2,8 @@
 {
     public enum PriceType
     {
-        Happiness,
-        Sexsnab,
+        Stock,
+        Full,
+        Discount
     }
 }

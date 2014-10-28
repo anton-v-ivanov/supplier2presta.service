@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using Supplier2Presta.Service.Entities;
+using System.Configuration;
 
 namespace Supplier2Presta.Service.Config
 {
@@ -9,63 +10,70 @@ namespace Supplier2Presta.Service.Config
         {
             get
             {
-                return ((string)(this["name"]));
-            }
-            set
-            {
-                this["name"] = value;
+                return (string)this["name"];
             }
         }
 
-        [ConfigurationProperty("stock-price-url", IsRequired = true)]
-        public string StockPriceUrl
+        [ConfigurationProperty("url", IsRequired = true)]
+        public string Url
         {
             get
             {
-                return ((string)(this["stock-price-url"]));
-            }
-            set
-            {
-                this["stock-price-url"] = value;
+                return (string)this["url"];
             }
         }
 
-        [ConfigurationProperty("full-price-url", IsRequired = true)]
-        public string FullPriceUrl
+        [ConfigurationProperty("supplier", IsRequired = true)]
+        public SupplierType Supplier
         {
             get
             {
-                return ((string)(this["full-price-url"]));
-            }
-            set
-            {
-                this["full-price-url"] = value;
+                return (SupplierType)this["supplier"];
             }
         }
 
-        [ConfigurationProperty("archive-directory", IsRequired = true)]
+        [ConfigurationProperty("type", IsRequired = true)]
+        public PriceType PriceType
+        {
+            get
+            {
+                return (PriceType)this["type"];
+            }
+        }
+
+        [ConfigurationProperty("archive-dir", IsRequired = true)]
         public string ArchiveDirectory
         {
             get
             {
-                return ((string)(this["archive-directory"]));
-            }
-            set
-            {
-                this["archive-directory"] = value;
+                return (string)this["archive-dir"];
             }
         }
 
-        [ConfigurationProperty("price-encoding", IsRequired = false)]
+        [ConfigurationProperty("encoding", IsRequired = false)]
         public string PriceEncoding
         {
             get
             {
-                return ((string)(this["price-encoding"] ?? "utf-8"));
+                return (string)(this["encoding"] ?? "utf-8");
             }
-            set
+        }
+
+        [ConfigurationProperty("format-file", IsRequired = false)]
+        public string PriceFormatFile
+        {
+            get
             {
-                this["price-encoding"] = value;
+                return (string)(this["format-file"]);
+            }
+        }
+
+        [ConfigurationProperty("discount", IsRequired = false)]
+        public int Discount
+        {
+            get
+            {
+                return (int)(this["discount"]);
             }
         }
 

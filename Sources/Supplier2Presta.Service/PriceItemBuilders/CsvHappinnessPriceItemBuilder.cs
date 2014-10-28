@@ -5,7 +5,7 @@ using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Helpers;
 using System.Collections.Generic;
 using System.Globalization;
-using Supplier2Presta.Service.Multiplicators;
+using Supplier2Presta.Service.PriceBuilders;
 
 namespace Supplier2Presta.Service.PriceItemBuilders
 {

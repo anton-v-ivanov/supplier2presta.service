@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Supplier2Presta.Service.Multiplicators
+namespace Supplier2Presta.Service.PriceBuilders
 {
     public class RetailPriceBuilder : IRetailPriceBuilder
     {

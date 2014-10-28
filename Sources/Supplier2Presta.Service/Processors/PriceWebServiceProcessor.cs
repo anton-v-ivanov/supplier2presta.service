@@ -74,7 +74,10 @@ namespace Supplier2Presta.Service.Processors
                             {
                                 Log.Debug("Updating product {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.UpdateProductBalance(item, existingProd.First());
+                                Log.Debug("Updating price {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.UpdateProductPriceAndActivity(item, existingProd.First());
+                                Log.Debug("Updating discount info {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                                this.UpdateDiscountInfo(item, existingProd.First());
                             }
                             catch (ProcessAbortedException)
                             {
@@ -97,7 +100,10 @@ namespace Supplier2Presta.Service.Processors
                             {
                                 Log.Debug("Updating balance {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.UpdateProductBalance(item, existingProd.First());
+                                Log.Debug("Updating price {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.UpdateProductPriceAndActivity(item, existingProd.First());
+                                Log.Debug("Updating discount info {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                                this.UpdateDiscountInfo(item, existingProd.First());
                             }
                             catch (ProcessAbortedException)
                             {
@@ -146,7 +152,7 @@ namespace Supplier2Presta.Service.Processors
         {
             if (product.price != Convert.ToDecimal(priceItem.RetailPrice) || product.wholesale_price != Convert.ToDecimal(priceItem.WholesalePrice) 
                 || product.active != Convert.ToInt32(priceItem.Active)
-                || !CompareMetaInfo(priceItem, product))
+                || !SameMetaInfo(priceItem, product))
             {
                 product.price = Convert.ToDecimal(priceItem.RetailPrice);
                 product.wholesale_price = Convert.ToDecimal(priceItem.WholesalePrice);
@@ -158,7 +164,53 @@ namespace Supplier2Presta.Service.Processors
             }
         }
 
-        private bool CompareMetaInfo(PriceItem priceItem, product product)
+        private void UpdateDiscountInfo(PriceItem priceItem, product product)
+        {
+            if(product.on_sale != Convert.ToInt32(priceItem.OnSale))
+            {
+                var filter = new Dictionary<string, string> { { "id_product", Convert.ToString(product.id) } };
+                var specialPriceRule = _apiFactory.SpecialPriceFactory.GetByFilter(filter, null, null).FirstOrDefault();
+                if(specialPriceRule != null)
+                {
+                    if(!priceItem.OnSale && product.on_sale == 1)
+                    {
+                        // remove special price
+                        _apiFactory.SpecialPriceFactory.Delete(specialPriceRule);
+                    }
+                    else
+	                {
+                        if(specialPriceRule.reduction != priceItem.DiscountValue)
+                        {
+                            specialPriceRule.reduction = priceItem.DiscountValue;
+                            _apiFactory.SpecialPriceFactory.Update(specialPriceRule);
+                        }
+	                }
+                }
+                else
+                {
+                    specialPriceRule = new specific_price
+                    {
+                        id_product = product.id,
+                        reduction = Convert.ToDecimal(priceItem.DiscountValue) / 100,
+                        reduction_type = "percentage",
+                        id_shop = 1,
+                        id_cart = 0,
+                        id_currency = 0,
+                        id_country = 0,
+                        id_group = 0,
+                        id_customer = 0,
+                        from_quantity = 1,
+                        price = -1,
+                    };
+                    _apiFactory.SpecialPriceFactory.Add(specialPriceRule);
+                }
+                
+                product.on_sale = Convert.ToInt32(priceItem.OnSale);
+                _apiFactory.ProductFactory.Update(product);
+            }
+        }
+
+        private bool SameMetaInfo(PriceItem priceItem, product product)
         {
             if (string.IsNullOrWhiteSpace(priceItem.Name))
                 return true;

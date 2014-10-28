@@ -18,7 +18,8 @@ namespace Supplier2Presta.Service.Processors
         public ImageFactory ImageFactory;
         public SupplierFactory SupplierFactory;
         public ProductSupplierFactory ProductSupplierFactory;
-        
+        public SpecificPriceFactory SpecialPriceFactory;
+
         public product_feature SizeFeature;
         public product_feature ColorFeature;
         public product_feature MaterialFeature;
@@ -41,10 +42,13 @@ namespace Supplier2Presta.Service.Processors
             FeatureValuesFactory = new ProductFeatureValueFactory(BaseUrl, Account, Password);
             ImageFactory = new ImageFactory(BaseUrl, Account, Password);
             ProductSupplierFactory = new ProductSupplierFactory(BaseUrl, Account, Password);
+            
             SupplierFactory = new SupplierFactory(BaseUrl, Account, Password);
             Suppliers = SupplierFactory.GetAll();
 
             ManufacturerFactory = new ManufacturerFactory(BaseUrl, Account, Password);
+
+            SpecialPriceFactory = new SpecificPriceFactory(BaseUrl, Account, Password);
 
             var featuresFactory = new ProductFeatureFactory(BaseUrl, Account, Password);
             var features = featuresFactory.GetAll();
