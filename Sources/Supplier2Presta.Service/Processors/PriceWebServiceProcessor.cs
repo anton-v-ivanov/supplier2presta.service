@@ -154,7 +154,12 @@ namespace Supplier2Presta.Service.Processors
                 || product.active != Convert.ToInt32(priceItem.Active)
                 || !SameMetaInfo(priceItem, product))
             {
-                product.price = Convert.ToDecimal(priceItem.RetailPrice);
+                // price of onSale products is updated by special price
+                if (product.on_sale == 0)
+                {
+                    product.price = Convert.ToDecimal(priceItem.RetailPrice);
+                }
+
                 product.wholesale_price = Convert.ToDecimal(priceItem.WholesalePrice);
                 product.active = Convert.ToInt32(priceItem.Active);
 
