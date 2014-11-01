@@ -36,14 +36,14 @@ namespace Supplier2Presta.Service.Managers
             _differ = new Differ();
         }
 
-        protected PriceUpdateResult Process(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult, PriceType type, bool forceUpdate)
+        protected PriceUpdateResult Process(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult, PriceType priceType, bool forceUpdate)
         {
             try
             {
                 Log.Debug("Building the diff");
                 var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult.PriceItems, forceUpdate);
 
-                switch (type)
+                switch (priceType)
                 {
                     case PriceType.Stock:
                         Log.Info("Price type is stock. New items are excluded from processing");
@@ -66,7 +66,7 @@ namespace Supplier2Presta.Service.Managers
                     diff.NewItems.Values.ToList().ForEach(p => p.RetailPrice = _retailPriceBuilder.Build(p));
 
                     Log.Debug("Adding items");
-                    processor.Process(diff.NewItems, GeneratedPriceType.NewItems);
+                    processor.Process(diff.NewItems, GeneratedPriceType.NewItems, priceType);
                 }
 
                 if (diff.UpdatedItems.Any())
@@ -75,13 +75,13 @@ namespace Supplier2Presta.Service.Managers
                     diff.UpdatedItems.Values.ToList().ForEach(p => p.RetailPrice = _retailPriceBuilder.Build(p));
 
                     Log.Debug("Updating items");
-                    processor.Process(diff.UpdatedItems, GeneratedPriceType.SameItems);
+                    processor.Process(diff.UpdatedItems, GeneratedPriceType.SameItems, priceType);
                 }
 
                 if (diff.DeletedItems.Any())
                 {
                     Log.Debug("Deleting items");
-                    processor.Process(diff.DeletedItems, GeneratedPriceType.DeletedItems);
+                    processor.Process(diff.DeletedItems, GeneratedPriceType.DeletedItems, priceType);
                 }
 
                 Log.Info(string.Format("{0} lines processed. {1} updated, {2} added, {3} deleted", newPriceLoadResult.PriceItems.Count(), diff.UpdatedItems.Count, diff.NewItems.Count, diff.DeletedItems.Count));

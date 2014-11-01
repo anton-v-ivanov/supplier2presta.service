@@ -30,16 +30,16 @@ namespace Supplier2Presta.Service.Processors
             _accessToken = accessToken;
         }
 
-        public void Process(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType)
+        public void Process(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType, PriceType processingPriceType)
         {
             Log.Debug("Connecting to API");
 
             _apiFactory.InitFactories(_apiUrl, _accessToken);
 
-            ProcessDiff(priceItems, generatedPriceType);
+            ProcessDiff(priceItems, generatedPriceType, processingPriceType);
         }
         
-        private void ProcessDiff(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType)
+        private void ProcessDiff(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType, PriceType processingPriceType)
         {
             int currentCount = 0;
 
@@ -76,8 +76,11 @@ namespace Supplier2Presta.Service.Processors
                                 this.UpdateProductBalance(item, existingProd.First());
                                 Log.Debug("Updating price {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.UpdateProductPriceAndActivity(item, existingProd.First());
-                                Log.Debug("Updating discount info {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
-                                this.UpdateDiscountInfo(item, existingProd.First());
+                                if (processingPriceType == PriceType.Discount)
+                                {
+                                    Log.Debug("Updating discount info {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                                    this.UpdateDiscountInfo(item, existingProd.First());
+                                }
                             }
                             catch (ProcessAbortedException)
                             {
@@ -102,8 +105,11 @@ namespace Supplier2Presta.Service.Processors
                                 this.UpdateProductBalance(item, existingProd.First());
                                 Log.Debug("Updating price {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.UpdateProductPriceAndActivity(item, existingProd.First());
-                                Log.Debug("Updating discount info {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
-                                this.UpdateDiscountInfo(item, existingProd.First());
+                                if (processingPriceType == PriceType.Discount)
+                                {
+                                    Log.Debug("Updating discount info {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                                    this.UpdateDiscountInfo(item, existingProd.First());
+                                }
                             }
                             catch (ProcessAbortedException)
                             {
@@ -154,7 +160,7 @@ namespace Supplier2Presta.Service.Processors
                 || product.active != Convert.ToInt32(priceItem.Active)
                 || !SameMetaInfo(priceItem, product))
             {
-                // price of onSale products is updated by special price
+                // price of onSale products is updated by special file
                 if (product.on_sale == 0)
                 {
                     product.price = Convert.ToDecimal(priceItem.RetailPrice);

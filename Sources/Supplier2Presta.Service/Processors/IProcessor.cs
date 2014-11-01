@@ -8,6 +8,6 @@ namespace Supplier2Presta.Service.Processors
 {
     public interface IProcessor
     {
-        void Process(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType);
+        void Process(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType, PriceType processingPriceType);
     }
 }

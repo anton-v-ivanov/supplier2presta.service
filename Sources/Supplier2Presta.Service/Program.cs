@@ -35,7 +35,7 @@ namespace Supplier2Presta.Service
             var forceUpdate = false;
             if (args != null)
             {
-                forceUpdate = args.Any(s => s.Equals("forceUpdate", StringComparison.OrdinalIgnoreCase));
+                forceUpdate = args.Any(s => s.Equals("force", StringComparison.OrdinalIgnoreCase));
                 var typeStr = args.FirstOrDefault(s => s.StartsWith("t:", StringComparison.OrdinalIgnoreCase));
                 if(!string.IsNullOrWhiteSpace(typeStr))
                 {
