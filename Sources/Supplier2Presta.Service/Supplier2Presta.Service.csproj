@@ -64,6 +64,7 @@
     <Compile Include="Diffs\Diff.cs" />
     <Compile Include="Diffs\Differ.cs" />
     <Compile Include="Diffs\IDiffer.cs" />
+    <Compile Include="Entities\Exceptions\PhotoLoadException.cs" />
     <Compile Include="Entities\Exceptions\ProcessAbortedException.cs" />
     <Compile Include="Entities\GeneratedPriceType.cs" />
     <Compile Include="Entities\SupplierType.cs" />

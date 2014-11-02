@@ -42,6 +42,7 @@ namespace Supplier2Presta.Service.Processors
         private void ProcessDiff(Dictionary<string, PriceItem> priceItems, GeneratedPriceType generatedPriceType, PriceType processingPriceType)
         {
             int currentCount = 0;
+            var photoLoadErrorsOccured = false;
 
             foreach (var item in priceItems.Values)
             {
@@ -59,9 +60,9 @@ namespace Supplier2Presta.Service.Processors
                                 Log.Debug("Adding product {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 AddNewProduct(item);
                             }
-                            catch (ProcessAbortedException)
+                            catch (PhotoLoadException)
                             {
-                                throw;
+                                photoLoadErrorsOccured = true;
                             }
                             catch (Exception ex)
                             {
@@ -81,10 +82,6 @@ namespace Supplier2Presta.Service.Processors
                                     Log.Debug("Updating discount info {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                     this.UpdateDiscountInfo(item, existingProd.First());
                                 }
-                            }
-                            catch (ProcessAbortedException)
-                            {
-                                throw;
                             }
                             catch (Exception ex)
                             {
@@ -111,10 +108,6 @@ namespace Supplier2Presta.Service.Processors
                                     this.UpdateDiscountInfo(item, existingProd.First());
                                 }
                             }
-                            catch (ProcessAbortedException)
-                            {
-                                throw;
-                            }
                             catch (Exception ex)
                             {
 								Log.Error("Balance update error. Reference: {0}; {1}", item.Reference, ex);
@@ -130,10 +123,6 @@ namespace Supplier2Presta.Service.Processors
                                 Log.Debug("Disabling product {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 this.DisableProduct(existingProd.First());
                             }
-                            catch (ProcessAbortedException)
-                            {
-                                throw;
-                            }
                             catch (Exception ex)
                             {
 								Log.Error("Disable product error. Reference: {0}; {1}", item.Reference, ex);
@@ -141,6 +130,10 @@ namespace Supplier2Presta.Service.Processors
                         }
                         break;
                 }
+            }
+            if(photoLoadErrorsOccured)
+            {
+                throw new PhotoLoadException();
             }
         }
 
@@ -215,10 +208,12 @@ namespace Supplier2Presta.Service.Processors
                     };
                     _apiFactory.SpecialPriceFactory.Add(specialPriceRule);
                 }
-                
                 product.on_sale = Convert.ToInt32(priceItem.OnSale);
-                _apiFactory.ProductFactory.Update(product);
             }
+            
+            product.price = Convert.ToDecimal(priceItem.RetailPrice);
+            product.wholesale_price = Convert.ToDecimal(priceItem.WholesalePrice);
+            _apiFactory.ProductFactory.Update(product);
         }
 
         private bool SameMetaInfo(PriceItem priceItem, product product)
@@ -312,10 +307,10 @@ namespace Supplier2Presta.Service.Processors
 
 			if(product.associations.images == null || !product.associations.images.Any())
             {
-                Log.Fatal("Unable to load product photos. Adding new products aborted. Product reference: {0}", priceItem.Reference);
+                Log.Error("Unable to load product photos. Product will be deleted. Product reference: {0}", priceItem.Reference);
                 _apiFactory.ProductFactory.Delete(product.id.Value);
 				Log.Debug("Product deleted. Reference: {0}", priceItem.Reference);
-                throw new ProcessAbortedException();
+                throw new PhotoLoadException();
             }
 
 			this.GetProductSupplierValue(priceItem, product, supplier);
@@ -379,9 +374,9 @@ namespace Supplier2Presta.Service.Processors
                     var bytes = client.DownloadData(url);
                     return _apiFactory.ImageFactory.AddProductImage(product.id.Value, bytes);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Log.Error("Error while loading product image", ex);
+                    //Log.Error("Error while loading product image", ex);
                     return null;
                 }
             }

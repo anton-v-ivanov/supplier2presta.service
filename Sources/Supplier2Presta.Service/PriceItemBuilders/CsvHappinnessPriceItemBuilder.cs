@@ -15,6 +15,7 @@ namespace Supplier2Presta.Service.PriceItemBuilders
         private static readonly Regex LineRegex = new Regex(@"(""[^""]+"";)|(""?[\w\s./\:\-\?,–]*""?;)|([\w\s./:-]*$)", RegexOptions.Compiled);
 		//private static readonly Regex SizeRegex = new Regex(@"[A-Za-z]+|безразмерный", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 		//private static readonly Regex ColorRegex = new Regex(@"[А-Яа-я ]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly Regex Ean13Regex = new Regex("[0-9]{12}", RegexOptions.Compiled);
         
         private readonly PriceFormat PriceFormat;
 
@@ -47,7 +48,11 @@ namespace Supplier2Presta.Service.PriceItemBuilders
 
             if (this.PriceFormat.Ean13 > -1 && columns.Count > this.PriceFormat.Ean13)
             {
-                result.Ean13 = columns[this.PriceFormat.Ean13].Value.Trim(new[] { '"', ';' }).Trim();
+                result.Ean13 = Ean13Regex.Match(columns[this.PriceFormat.Ean13].Value.Trim(new[] { '"', ';' }).Trim()).Value;
+                if(result.Ean13.Length > 13)
+                {
+                    result.Ean13 = result.Ean13.Substring(0, 13);
+                }
             }
 
             if (this.PriceFormat.Description > -1)

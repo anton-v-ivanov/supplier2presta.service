@@ -97,6 +97,12 @@ namespace Supplier2Presta.Service.Managers
 
                 return new PriceUpdateResult(PriceUpdateResultStatus.Ok);
             }
+            catch (PhotoLoadException)
+            {
+                Log.Error("Processing aborted");
+                File.Delete(newPriceLoadResult.FilePath);
+                return new PriceUpdateResult(PriceUpdateResultStatus.ProcessAborted);
+            }
             catch (ProcessAbortedException)
             {
                 Log.Error("Processing aborted");

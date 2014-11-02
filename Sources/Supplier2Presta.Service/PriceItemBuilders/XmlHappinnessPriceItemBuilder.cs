@@ -7,12 +7,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Supplier2Presta.Service.PricefileItemBuilders
 {
     public class XmlHappinnessPriceItemBuilder : IPriceItemBuilder<XmlItem>
     {
+        private readonly Regex Ean13Regex = new Regex("[0-9]{12}", RegexOptions.Compiled);
+
         public PriceItem Build(XmlItem fileItem)
         {
             var result = new PriceItem
@@ -36,6 +39,11 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
                 WholesalePrice = float.Parse(fileItem.Wholesale.Replace(" ", "").Replace(",", "."), new NumberFormatInfo { NumberDecimalSeparator = "." }),
             };
             
+            if (!string.IsNullOrWhiteSpace(result.Ean13) && result.Ean13.Length > 13)
+            {
+                result.Ean13 = Ean13Regex.Match(result.Ean13).Value.Substring(0, 13);
+            }
+
             if(fileItem.Category != null)
             {
                 result.RootCategory = fileItem.Category.CatName;
