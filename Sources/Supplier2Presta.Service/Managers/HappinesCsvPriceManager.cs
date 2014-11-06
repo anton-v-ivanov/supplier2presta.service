@@ -6,7 +6,7 @@ using Supplier2Presta.Service.Entities.Exceptions;
 using Supplier2Presta.Service.Loaders;
 using Supplier2Presta.Service.PriceBuilders;
 using Supplier2Presta.Service.PriceItemBuilders;
-using Supplier2Presta.Service.Processors;
+using Supplier2Presta.Service.ShopApiProcessors;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,7 +31,6 @@ namespace Supplier2Presta.Service.Managers
             var priceFormat = GetPriceFormat(_settings.PriceFormatFile);
             
             var csvPriceLoader = new CsvPriceLoader(_settings.PriceEncoding, priceFormat);
-            var oldPriceLoader = new NewestFileSystemPriceLoader(csvPriceLoader);
             var newPriceLoader = new SingleFilePriceLoader(csvPriceLoader);
 
             var newPriceLoadResult = newPriceLoader.Load<string>(_settings.Url);
@@ -42,9 +41,15 @@ namespace Supplier2Presta.Service.Managers
                 return new PriceUpdateResult(PriceUpdateResultStatus.PriceLoadFail);
             }
 
-            var oldPriceLoadResult = oldPriceLoader.Load<string>(_archiveDirectory);
+            PriceLoadResult oldPriceLoadResult = null;
 
-            return base.Process(newPriceLoadResult, oldPriceLoadResult, type, forceUpdate);
+            if (!forceUpdate)
+            {
+                var oldPriceLoader = new NewestFileSystemPriceLoader(csvPriceLoader);
+                oldPriceLoadResult = oldPriceLoader.Load<string>(_archiveDirectory);
+            }
+
+            return base.Process(newPriceLoadResult, oldPriceLoadResult, type);
         }
 
         private PriceFormat GetPriceFormat(string priceFormatFile)

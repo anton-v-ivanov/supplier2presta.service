@@ -37,8 +37,7 @@ namespace Supplier2Presta.Service.PriceItemBuilders
                     .Replace(",", "."),
                     new NumberFormatInfo { NumberDecimalSeparator = "." }),
                 Manufacturer = this.PriceFormat.Manufacturer > -1 ? columns[this.PriceFormat.Manufacturer].Value.Trim(new[] { '"', ';' }) : string.Empty,
-                Photo1 = this.PriceFormat.Photo1 > -1 ? columns[this.PriceFormat.Photo1].Value.Trim(new[] { '"', ';' }) : string.Empty,
-                Balance = Convert.ToInt32(columns[this.PriceFormat.Balance].Value.Trim(new[] { '"', ';' })),
+                PhotoSmall = this.PriceFormat.Photo1 > -1 ? columns[this.PriceFormat.Photo1].Value.Trim(new[] { '"', ';' }) : string.Empty,
             };
 
             if (result.SupplierReference.Length > 32)
@@ -74,8 +73,15 @@ namespace Supplier2Presta.Service.PriceItemBuilders
 
             result.RetailPrice = float.Parse(columns[this.PriceFormat.RetailPrice].Value.Trim(new[] { '"', ';' }).Replace(" ", "").Replace(",", "."), new NumberFormatInfo { NumberDecimalSeparator = "." });
 
-            result.Size = this.PriceFormat.Size > -1 ? columns[this.PriceFormat.Size].Value.Trim(new[] { '"', ';' }) : string.Empty;
-            result.Color = this.PriceFormat.Color > -1 ? columns[this.PriceFormat.Color].Value.Trim(new[] { '"', ';' }).FirstLetterToUpper() : string.Empty;
+            result.Assort.Add(
+                new Assort
+                {
+                    Balance = Convert.ToInt32(columns[this.PriceFormat.Balance].Value.Trim(new[] { '"', ';' })),
+                    Size = this.PriceFormat.Size > -1 ? columns[this.PriceFormat.Size].Value.Trim(new[] { '"', ';' }) : string.Empty,
+                    Color = this.PriceFormat.Color > -1 ? columns[this.PriceFormat.Color].Value.Trim(new[] { '"', ';' }).FirstLetterToUpper() : string.Empty,
+                    Reference = this.PriceFormat.Aid > -1 ? "200" + columns[this.PriceFormat.Aid].Value.Trim(new[] { '"', ';' }) : null,
+                });
+
             result.Material = this.PriceFormat.Material > -1 ? columns[this.PriceFormat.Material].Value.Trim(new[] { '"', ';' }).FirstLetterToUpper() : string.Empty;
             result.Country = this.PriceFormat.Country > -1 ? columns[this.PriceFormat.Country].Value.Trim(new[] { '"', ';' }).FirstLetterToUpper() : string.Empty;
             result.Packing = this.PriceFormat.Packing > -1 ? columns[this.PriceFormat.Packing].Value.Trim(new[] { '"', ';' }).FirstLetterToUpper() : string.Empty;
@@ -88,11 +94,16 @@ namespace Supplier2Presta.Service.PriceItemBuilders
             result.Category = categories.Item2;
             result.Active = this.PriceFormat.Active > -1 ? Convert.ToBoolean(Convert.ToInt32(columns[this.PriceFormat.Active].Value.Trim(new[] { '"', ';' }))) : true;
             result.Battery = this.PriceFormat.Battery > -1 ? columns[this.PriceFormat.Battery].Value.Trim(new[] { '"', ';', ' ' }).FirstLetterToUpper().CapitalizeEnglish() : string.Empty;
-            result.Photo2 = this.PriceFormat.Photo2 > -1 ? columns[this.PriceFormat.Photo2].Value.Trim(new[] { '"', ';' }) : string.Empty;
-            result.Photo3 = this.PriceFormat.Photo3 > -1 ? columns[this.PriceFormat.Photo3].Value.Trim(new[] { '"', ';' }) : string.Empty;
-            result.Photo4 = this.PriceFormat.Photo4 > -1 ? columns[this.PriceFormat.Photo4].Value.Trim(new[] { '"', ';' }) : string.Empty;
-            result.Photo5 = this.PriceFormat.Photo5 > -1 ? columns[this.PriceFormat.Photo5].Value.Trim(new[] { '"', ';' }) : string.Empty;
             result.Weight = this.PriceFormat.Weight > -1 ? columns[this.PriceFormat.Weight].Value.Trim(new[] { '"', ';' }) : string.Empty;
+
+            if (this.PriceFormat.Photo2 > -1)
+                result.Photos.Add(columns[this.PriceFormat.Photo2].Value.Trim(new[] { '"', ';' }));
+            if(this.PriceFormat.Photo3 > -1)
+                result.Photos.Add(columns[this.PriceFormat.Photo3].Value.Trim(new[] { '"', ';' }));
+            if(this.PriceFormat.Photo4 > -1)
+                result.Photos.Add(columns[this.PriceFormat.Photo4].Value.Trim(new[] { '"', ';' }));
+            if(this.PriceFormat.Photo5 > -1)
+                result.Photos.Add(columns[this.PriceFormat.Photo5].Value.Trim(new[] { '"', ';' }));
             
             //if(this.PriceFormat.Color < 0 && this.PriceFormat.Size > -1)
             //{

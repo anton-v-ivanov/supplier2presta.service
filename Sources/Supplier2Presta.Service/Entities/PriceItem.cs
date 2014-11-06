@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
 
 namespace Supplier2Presta.Service.Entities
 {
@@ -24,27 +25,11 @@ namespace Supplier2Presta.Service.Entities
 
         public string Description { get; set; }
 
-        public int Balance { get; set; }
-
         public bool Active { get; set; }
 
         public string Ean13 { get; set; }
 
-        public string Photo1 { get; set; }
-
-        public string Photo2 { get; set; }
-
-        public string Photo3 { get; set; }
-
-        public string Photo4 { get; set; }
-
-        public string Photo5 { get; set; }
-
         public string Manufacturer { get; set; }
-
-        public string Size { get; set; }
-
-        public string Color { get; set; }
 
         public string Battery { get; set; }
 
@@ -64,65 +49,16 @@ namespace Supplier2Presta.Service.Entities
 
         public int DiscountValue { get; set; }
 
-        private string Features
+        public string PhotoSmall { get; set; }
+
+        public List<string> Photos { get; set; }
+
+        public List<Assort> Assort { get; set; }
+
+        public PriceItem()
         {
-            get
-            {
-                var features = string.Empty;
-                if (!string.IsNullOrWhiteSpace(this.Size))
-                {
-                    features += string.Format("{0}|", this.Size);
-                }
-
-                if (!string.IsNullOrWhiteSpace(this.Color))
-                {
-                    features += string.Format("{0}|", this.Color);
-                }
-
-                if (!string.IsNullOrWhiteSpace(this.Material))
-                {
-                    features += string.Format("{0}|", this.Material);
-                }
-
-                if (!string.IsNullOrWhiteSpace(this.Country))
-                {
-                    features += string.Format("{0}|", this.Country);
-                }
-
-                if (!string.IsNullOrWhiteSpace(this.Packing))
-                {
-                    features += string.Format("{0}|", this.Packing);
-                }
-
-                if (!string.IsNullOrWhiteSpace(this.Length))
-                {
-                    features += string.Format("{0}|", this.Length);
-                }
-
-                if (!string.IsNullOrWhiteSpace(this.Diameter))
-                {
-                    features += string.Format("{0}", this.Diameter);
-                }
-
-                return features;
-            }
-        }
-
-        public string ToString(string format)
-        {
-            return format.Replace("{{Name}}", this.Name)
-                .Replace("{{Reference}}", this.Reference)
-                .Replace("{{SupplierName}}", this.SupplierName)
-                .Replace("{{SupplierReference}}", this.SupplierReference)
-                .Replace("{{WholesalePrice}}", this.WholesalePrice.ToString(CultureInfo.InvariantCulture))
-                .Replace("{{RetailPrice}}", this.RetailPrice.ToString(CultureInfo.InvariantCulture))
-                .Replace("{{Category}}", this.Category)
-                .Replace("{{Manufacturer}}", this.Manufacturer)
-                .Replace("{{ShortDescription}}", this.ShortDescription)
-                .Replace("{{Description}}", this.Description)
-                .Replace("{{Photo}}", this.Photo1)
-                .Replace("{{Balance}}", this.Balance.ToString(CultureInfo.InvariantCulture))
-                .Replace("{{Features}}", this.Features);
+            Assort = new List<Assort>();
+            Photos = new List<string>();
         }
     }
 }

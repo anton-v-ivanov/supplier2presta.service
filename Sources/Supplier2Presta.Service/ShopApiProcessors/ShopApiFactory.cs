@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Supplier2Presta.Service.Processors
+namespace Supplier2Presta.Service.ShopApiProcessors
 {
     public class ShopApiFactory
     {
@@ -20,17 +20,22 @@ namespace Supplier2Presta.Service.Processors
         public ProductSupplierFactory ProductSupplierFactory;
         public SpecificPriceFactory SpecialPriceFactory;
 
-        public product_feature SizeFeature;
-        public product_feature ColorFeature;
         public product_feature MaterialFeature;
         public product_feature CountryFeature;
         public product_feature PackingFeature;
         public product_feature LengthFeature;
         public product_feature DiameterFeature;
         public product_feature BatteryFeature;
-        
-        public List<supplier> Suppliers;
+        public product_feature SizeFeature;
+        public product_feature ColorFeature;
 
+        public product_option SizeOption;
+        public product_option ColorOption;
+        public ProductOptionValueFactory OptionsValueFactory;
+        public CombinationFactory CombinationFactory;
+
+        public List<supplier> Suppliers;
+        
         public void InitFactories(string url, string account)
         {
             string BaseUrl = url;
@@ -52,26 +57,9 @@ namespace Supplier2Presta.Service.Processors
 
             var featuresFactory = new ProductFeatureFactory(BaseUrl, Account, Password);
             var features = featuresFactory.GetAll();
-
-            SizeFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Размер", StringComparison.InvariantCultureIgnoreCase));
-            if (SizeFeature == null)
-            {
-                SizeFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Размер") }
-                };
-                SizeFeature = featuresFactory.Add(SizeFeature);
-            }
-
-            ColorFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Цвет", StringComparison.InvariantCultureIgnoreCase));
-            if (ColorFeature == null)
-            {
-                ColorFeature = new product_feature()
-                {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Цвет") }
-                };
-                ColorFeature = featuresFactory.Add(ColorFeature);
-            }
+            
+            //SizeFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Размер", StringComparison.InvariantCultureIgnoreCase));
+            //ColorFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Цвет", StringComparison.InvariantCultureIgnoreCase));
 
             BatteryFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Батарейки", StringComparison.InvariantCultureIgnoreCase));
             if (BatteryFeature == null)
@@ -132,6 +120,16 @@ namespace Supplier2Presta.Service.Processors
                 };
                 DiameterFeature = featuresFactory.Add(DiameterFeature);
             }
+
+            var optionsFactory = new ProductOptionFactory(BaseUrl, Account, Password);
+            var options = optionsFactory.GetAll();
+
+            SizeOption = options.First(f => f.name.First().Value.Equals("size", StringComparison.InvariantCultureIgnoreCase));
+            ColorOption = options.First(f => f.name.First().Value.Equals("color", StringComparison.InvariantCultureIgnoreCase));
+
+            OptionsValueFactory = new ProductOptionValueFactory(BaseUrl, Account, Password);
+
+            CombinationFactory = new CombinationFactory(BaseUrl, Account, Password);
         }
     }
 }

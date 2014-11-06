@@ -55,6 +55,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\ColorMappingElement.cs" />
+    <Compile Include="Config\ColorMappingElementCollection.cs" />
     <Compile Include="Config\MultiplicatorRuleElement.cs" />
     <Compile Include="Config\MultiplicatorsElementCollection.cs" />
     <Compile Include="Config\RobotSettings.cs" />
@@ -64,6 +66,7 @@
     <Compile Include="Diffs\Diff.cs" />
     <Compile Include="Diffs\Differ.cs" />
     <Compile Include="Diffs\IDiffer.cs" />
+    <Compile Include="Entities\Assort.cs" />
     <Compile Include="Entities\Exceptions\PhotoLoadException.cs" />
     <Compile Include="Entities\Exceptions\ProcessAbortedException.cs" />
     <Compile Include="Entities\GeneratedPriceType.cs" />
@@ -92,12 +95,24 @@
     <Compile Include="Managers\PriceManagerBuilder.cs" />
     <Compile Include="PriceBuilders\IRetailPriceBuilder.cs" />
     <Compile Include="PriceBuilders\RetailPriceBuilder.cs" />
+    <Compile Include="PriceItemBuilders\ColorBuilder.cs" />
     <Compile Include="PriceItemBuilders\CsvHappinnessPriceItemBuilder.cs" />
+    <Compile Include="PriceItemBuilders\IColorBuilder.cs" />
     <Compile Include="PriceItemBuilders\IPriceItemBuilder.cs" />
     <Compile Include="PriceItemBuilders\XmlHappinnessPriceItemBuilder.cs" />
-    <Compile Include="Processors\IProcessor.cs" />
-    <Compile Include="Processors\PriceWebServiceProcessor.cs" />
-    <Compile Include="Processors\ShopApiFactory.cs" />
+    <Compile Include="ShopApiProcessors\EntityProcessors\CategoryProcessor.cs" />
+    <Compile Include="ShopApiProcessors\EntityProcessors\CombinationsProcessor.cs" />
+    <Compile Include="ShopApiProcessors\EntityProcessors\FeatureProcessor.cs" />
+    <Compile Include="ShopApiProcessors\EntityProcessors\ImageProcessor.cs" />
+    <Compile Include="ShopApiProcessors\IProcessor.cs" />
+    <Compile Include="ShopApiProcessors\EntityProcessors\ManufacturerProcessor.cs" />
+    <Compile Include="ShopApiProcessors\PriceWebServiceProcessor.cs" />
+    <Compile Include="ShopApiProcessors\ProductCreator.cs" />
+    <Compile Include="ShopApiProcessors\ProductRemover.cs" />
+    <Compile Include="ShopApiProcessors\ProductUpdater.cs" />
+    <Compile Include="ShopApiProcessors\ShopApiFactory.cs" />
+    <Compile Include="ShopApiProcessors\EntityProcessors\StockProcessor.cs" />
+    <Compile Include="ShopApiProcessors\EntityProcessors\SupplierProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

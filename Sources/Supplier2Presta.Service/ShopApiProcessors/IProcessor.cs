@@ -4,7 +4,7 @@ using Supplier2Presta.Service.Diffs;
 using Supplier2Presta.Service.Entities;
 using System.Collections.Generic;
 
-namespace Supplier2Presta.Service.Processors
+namespace Supplier2Presta.Service.ShopApiProcessors
 {
     public interface IProcessor
     {

@@ -9,6 +9,8 @@ namespace Supplier2Presta.Service.Entities
 
         public int SupplierReference { get; set; }
 
+        public int Aid { get; set; }
+
         public int Reference { get; set; }
 
         public int WholesalePrice { get; set; }

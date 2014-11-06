@@ -1,6 +1,7 @@
 ﻿using Supplier2Presta.Service.Config;
 using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.PriceBuilders;
+using Supplier2Presta.Service.PriceItemBuilders;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -13,7 +14,7 @@ namespace Supplier2Presta.Service.Managers
 {
     class PriceManagerBuilder
     {
-        public static IPriceManager Build(SupplierElement settings, string apiUrl, string apiAccessToken)
+        public static IPriceManager Build(SupplierElement settings, string apiUrl, string apiAccessToken, IColorBuilder colorCodeBuilder)
         {
             if(settings.Supplier != SupplierType.Happiness)
                 throw new ConfigurationErrorsException("There is no price manager for supplier type " + settings.Supplier);
@@ -25,7 +26,7 @@ namespace Supplier2Presta.Service.Managers
             switch (Path.GetExtension(settings.Url))
             {
                 case ".xml":
-                    return new HappinesXmlPriceManager(settings, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken);
+                    return new HappinesXmlPriceManager(settings, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken, colorCodeBuilder);
                 
                 case ".csv":
                     return new HappinesCsvPriceManager(settings, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken);

@@ -75,7 +75,7 @@ namespace Supplier2Presta.Service.Entities.XmlPrice
         /// Данные по ассортименту
         /// </summary>
         [XmlElement("assort")]
-        public XmlAssort Assort { get; set; }
+        public List<XmlAssort> Assort { get; set; }
     }
     
     [Serializable]

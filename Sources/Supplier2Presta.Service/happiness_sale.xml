@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <PriceFormat>
     <Reference>0</Reference>
+    <Aid>1</Aid>
     <RetailPrice>2</RetailPrice>
     <WholesalePrice>4</WholesalePrice>
     <Balance>5</Balance>

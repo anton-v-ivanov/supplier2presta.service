@@ -13,5 +13,15 @@ namespace Supplier2Presta.Service.Config
                 return ((SuppliersElementCollection)(this["suppliers"]));
             }
         }
+
+        [ConfigurationProperty("color-mappings")]
+        [ConfigurationCollection(typeof(ColorMappingElement), AddItemName = "add")]
+        public ColorMappingElementCollection Colors
+        {
+            get
+            {
+                return ((ColorMappingElementCollection)(this["color-mappings"]));
+            }
+        }
     }
 }

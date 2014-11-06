@@ -5,7 +5,7 @@ using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Entities.Exceptions;
 using Supplier2Presta.Service.Loaders;
 using Supplier2Presta.Service.PriceBuilders;
-using Supplier2Presta.Service.Processors;
+using Supplier2Presta.Service.ShopApiProcessors;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,12 +36,12 @@ namespace Supplier2Presta.Service.Managers
             _differ = new Differ();
         }
 
-        protected PriceUpdateResult Process(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult, PriceType priceType, bool forceUpdate)
+        protected PriceUpdateResult Process(PriceLoadResult newPriceLoadResult, PriceLoadResult oldPriceLoadResult, PriceType priceType)
         {
             try
             {
                 Log.Debug("Building the diff");
-                var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult.PriceItems, forceUpdate);
+                var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult.PriceItems);
 
                 switch (priceType)
                 {

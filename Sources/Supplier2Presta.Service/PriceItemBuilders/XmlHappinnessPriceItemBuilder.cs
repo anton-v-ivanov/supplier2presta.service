@@ -15,30 +15,54 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
     public class XmlHappinnessPriceItemBuilder : IPriceItemBuilder<XmlItem>
     {
         private readonly Regex Ean13Regex = new Regex("[0-9]{12}", RegexOptions.Compiled);
+        private readonly IColorBuilder _colorCodeBuilder;
+
+        public XmlHappinnessPriceItemBuilder(IColorBuilder colorCodeBuilder)
+        {
+            _colorCodeBuilder = colorCodeBuilder;
+        }
 
         public PriceItem Build(XmlItem fileItem)
         {
             var result = new PriceItem
             {
                 Active = true,
-                Balance = fileItem.Assort.Sklad,
-                Color = fileItem.Assort.Color,
-                Ean13 = fileItem.Assort.Barcode,
                 Manufacturer = fileItem.Vendor,
                 Name = !string.IsNullOrWhiteSpace(fileItem.Name) ? fileItem.Name.MakeSafeName() : string.Empty,
-                Photo1 = fileItem.PictureSmall,
-                Photo2 = SafeGetPicture(fileItem, 0),
-                Photo3 = SafeGetPicture(fileItem, 1),
-                Photo4 = SafeGetPicture(fileItem, 2),
-                Photo5 = SafeGetPicture(fileItem, 3),
+                PhotoSmall = fileItem.PictureSmall,
                 Reference = "200" + fileItem.Id.Trim(new[] { '"', ';' }),
                 RetailPrice = float.Parse(fileItem.Price.Trim(new[] { '"', ';' }).Replace(" ", "").Replace(",", "."), new NumberFormatInfo { NumberDecimalSeparator = "." }),
-                Size = fileItem.Assort.Size,
+                
                 SupplierName = "happiness",
                 SupplierReference = fileItem.VendorCode,
                 WholesalePrice = float.Parse(fileItem.Wholesale.Replace(" ", "").Replace(",", "."), new NumberFormatInfo { NumberDecimalSeparator = "." }),
             };
-            
+
+            if(fileItem.Pictures != null)
+            {
+                foreach (var picture in fileItem.Pictures)
+	            {
+                    result.Photos.Add(picture);
+	            }
+            }
+
+            if(fileItem.Assort != null)
+            {
+                foreach (var assort in fileItem.Assort)
+	            {
+                    var a = new Assort
+                        {
+                            Balance = assort.Sklad,
+                            Color = !string.IsNullOrWhiteSpace(assort.Color) ? _colorCodeBuilder.GetMainColor(assort.Color.FirstLetterToUpper()) : string.Empty,
+                            Size = assort.Size,
+                            Ean13 = assort.Barcode,
+                            Reference = "200" + assort.Aid,
+                        };
+                    a.ColorCode = !string.IsNullOrWhiteSpace(a.Color) ? _colorCodeBuilder.GetCode(a.Color) : string.Empty;
+                    result.Assort.Add(a);
+	            }
+            }
+
             if (!string.IsNullOrWhiteSpace(result.Ean13) && result.Ean13.Length > 13)
             {
                 result.Ean13 = Ean13Regex.Match(result.Ean13).Value.Substring(0, 13);
@@ -73,11 +97,6 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
             }
 
             return result;
-        }
-
-        private static string SafeGetPicture(XmlItem fileItem, int index)
-        {
-            return fileItem.Pictures != null && fileItem.Pictures.Count() > index ? fileItem.Pictures[index] : string.Empty;
         }
     }
 }

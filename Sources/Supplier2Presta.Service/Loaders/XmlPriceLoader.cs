@@ -17,6 +17,12 @@ namespace Supplier2Presta.Service.Loaders
     public class XmlPriceLoader : IPriceLoader
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        private readonly IColorBuilder _colorCodeBuilder;
+
+        public XmlPriceLoader(IColorBuilder colorCodeBuilder)
+        {
+            _colorCodeBuilder = colorCodeBuilder;
+        }
 
         public PriceLoadResult Load<T>(string uri)
         {
@@ -37,7 +43,7 @@ namespace Supplier2Presta.Service.Loaders
 
             Log.Debug("{0} lines are loaded", xmlItems.Items.Count.ToString(CultureInfo.InvariantCulture));
             
-            var priceItemBuilder = new XmlHappinnessPriceItemBuilder();
+            var priceItemBuilder = new XmlHappinnessPriceItemBuilder(_colorCodeBuilder);
             var newItems = xmlItems.Items.Select(priceItemBuilder.Build);
 
             var prods = new Dictionary<string, PriceItem>();

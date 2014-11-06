@@ -122,5 +122,21 @@ namespace Supplier2Presta.Service.Helpers
             }
             return product;
         }
+
+        internal static product MapCombination(product product, combination combination)
+        {
+            if(combination == null)
+            {
+                return product;
+            }
+
+            product.associations.combinations.Add(
+                new Bukimedia.PrestaSharp.Entities.AuxEntities.combinations
+                {
+                    id = combination.id.Value
+                });
+            return product;
+
+        }
     }
 }

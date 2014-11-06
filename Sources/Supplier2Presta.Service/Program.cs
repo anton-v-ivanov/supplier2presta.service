@@ -1,25 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
+using System.Collections.Generic;
 
 using NLog;
-
-using Supplier2Presta.Service.Diffs;
 using Supplier2Presta.Service.Entities;
-using Supplier2Presta.Service.Helpers;
-using Supplier2Presta.Service.PriceItemBuilders;
-using Supplier2Presta.Service.Processors;
-using System.Globalization;
-using Supplier2Presta.Service.Loaders;
-using Supplier2Presta.Service.Entities.Exceptions;
-using Supplier2Presta.Service.Managers;
 using Supplier2Presta.Service.Config;
-using Supplier2Presta.Service.PriceBuilders;
+using Supplier2Presta.Service.Managers;
+using Supplier2Presta.Service.PriceItemBuilders;
 
 namespace Supplier2Presta.Service
 {
@@ -65,11 +53,19 @@ namespace Supplier2Presta.Service
             var apiUrl = ConfigurationManager.AppSettings["api-url"];
             var apiAccessToken = ConfigurationManager.AppSettings["api-access-token"];
 
+            var colorsDictionary = new Dictionary<string, string>();
+            foreach (ColorMappingElement color in RobotSettings.Config.Colors)
+            {
+                colorsDictionary.Add(color.Name, color.Code);
+            }
+            
+            var colorCodeBuilder = new ColorBuilder(colorsDictionary);
+
             foreach (SupplierElement settings in RobotSettings.Config.Suppliers)
             {
                 if (updateTypes.Contains(settings.PriceType))
                 {
-                    var priceManager = PriceManagerBuilder.Build(settings, apiUrl, apiAccessToken);
+                    var priceManager = PriceManagerBuilder.Build(settings, apiUrl, apiAccessToken, colorCodeBuilder);
 
                     Log.Info("Processing price: '{0}' Type: {1}", settings.Name, settings.PriceType);
 

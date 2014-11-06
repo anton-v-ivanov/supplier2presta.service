@@ -8,7 +8,7 @@ namespace Supplier2Presta.Service.Diffs
 {
     public class Differ : IDiffer
     {
-        public Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds, bool forceUpdate)
+        public Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds)
         {
             oldProds = oldProds ?? new Dictionary<string, PriceItem>();
 
@@ -19,26 +19,38 @@ namespace Supplier2Presta.Service.Diffs
                 UpdatedItems = newProds.Where(kvp => oldProds.ContainsKey(kvp.Key)).ToDictionary(key => key.Key, value => value.Value)
             };
 
-            // if force update flag is set, than we shold keep all the data in updated field
-            if (!forceUpdate)
+            var toRemove = new List<string>();
+            foreach (var item in diff.UpdatedItems.Values)
             {
-                var toRemove = new List<string>();
-                foreach (var item in diff.UpdatedItems.Values)
+                var oldItem = oldProds[item.Reference];
+                if (item.WholesalePrice == oldItem.WholesalePrice && item.Active == oldItem.Active && !SameBalance(item, oldItem))
                 {
-                    var oldItem = oldProds[item.Reference];
-                    if (item.WholesalePrice == oldItem.WholesalePrice && item.Active == oldItem.Active && item.Balance == oldItem.Balance)
-                    {
-                        toRemove.Add(item.Reference);
-                    }
-                }
-
-                foreach (var reference in toRemove)
-                {
-                    diff.UpdatedItems.Remove(reference);
+                    toRemove.Add(item.Reference);
                 }
             }
 
+            foreach (var reference in toRemove)
+            {
+                diff.UpdatedItems.Remove(reference);
+            }
+
             return diff;
+        }
+
+        private bool SameBalance(PriceItem item, PriceItem oldItem)
+        {
+            foreach (var assort in item.Assort)
+            {
+                var oldAssort = oldItem.Assort
+                    .FirstOrDefault(s => s.Size.Equals(assort.Size, System.StringComparison.OrdinalIgnoreCase) && 
+                        s.Color.Equals(assort.Color, System.StringComparison.OrdinalIgnoreCase));
+                
+                if(oldAssort != null && oldAssort.Balance != assort.Balance)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
