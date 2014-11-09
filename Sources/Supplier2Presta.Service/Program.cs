@@ -77,7 +77,8 @@ namespace Supplier2Presta.Service
                     }
                 }
             }
-            
+
+			Log.Info("Price update finished successfully");
             return Convert.ToInt32(PriceUpdateResultStatus.Ok);
         }
     }

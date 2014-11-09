@@ -22,12 +22,11 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
         {
             foreach (var assort in priceItem.Assort)
             {
-                var combination = this.GetCombination(product, assort);
-                ProductsMapper.MapCombination(product, combination);
+                this.GetOrCreateCombination(product, assort);
             }
         }
 
-        internal combination GetCombination(product product, Assort assort)
+        internal combination GetOrCreateCombination(product product, Assort assort)
         {
             Dictionary<string, string> filter = null;
             List<combination> combinations = null;
@@ -74,21 +73,21 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
                         if (combination.associations.product_option_values.Exists(s => s.id == sizeOptionValue.id.Value) &&
                             combination.associations.product_option_values.Exists(s => s.id == colorOptionValue.id.Value))
                         {
-                            return CheckCombination(combination, assort);
+                            return CheckCombination(combination, assort, product);
                         }
                     }
                     else if (colorOptionValue != null)
                     {
                         if (combination.associations.product_option_values.Exists(s => s.id == colorOptionValue.id.Value))
                         {
-                            return CheckCombination(combination, assort);
+                            return CheckCombination(combination, assort, product);
                         }
                     }
                     else if (sizeOptionValue != null)
                     {
                         if (combination.associations.product_option_values.Exists(s => s.id == sizeOptionValue.id.Value))
                         {
-                            return CheckCombination(combination, assort);
+                            return CheckCombination(combination, assort, product);
                         }
                     }
                 }
@@ -97,12 +96,18 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
             }
         }
 
-        private combination CheckCombination(combination combination, Assort assort)
+        private combination CheckCombination(combination combination, Assort assort, product product)
         {
             if (combination != null && combination.reference != assort.Reference)
             {
                 combination.reference = assort.Reference;
                 _apiFactory.CombinationFactory.Update(combination);
+            }
+            
+            if(!product.associations.combinations.Exists(s => s.id == combination.id))
+            {
+                product = ProductsMapper.MapCombination(product, combination);
+                _apiFactory.ProductFactory.Update(product);
             }
             return combination;
         }
@@ -128,7 +133,10 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
                 combination.associations.product_option_values.Add(new Bukimedia.PrestaSharp.Entities.AuxEntities.product_option_value { id = sizeOptionValue.id.Value });
             }
 
-            return _apiFactory.CombinationFactory.Add(combination);
+            combination = _apiFactory.CombinationFactory.Add(combination);
+            product = ProductsMapper.MapCombination(product, combination);
+            _apiFactory.ProductFactory.Update(product);
+            return combination;
         }
 
         private product_option_value GetOptionValue(string option, string colorCode, long optionId)

@@ -57,7 +57,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors
                         {
                             try
                             {
-                                Log.Debug("Adding product {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                                Log.Info("Adding product {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
                                 _productCreator.Create(item);
                             }
                             catch (PhotoLoadException)
@@ -71,27 +71,32 @@ namespace Supplier2Presta.Service.ShopApiProcessors
                         }
                         else
                         {
-                            Log.Info("Price and balance will be updated by Stock file. Product {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                            try
+                            {
+                                Log.Debug("Updating item {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                                _productUpdater.Update(existingProd.First(), item, processingPriceType);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error("Balance update error. Reference: {0}; {1}", item.Reference, ex);
+                            }
                         }
                         break;
                     case GeneratedPriceType.SameItems:
-                        if (processingPriceType != PriceType.Full)
+                        if (existingProd == null || !existingProd.Any())
                         {
-                            if (existingProd == null || !existingProd.Any())
+                            Log.Warn("Product does't exists. It will be added later. Reference: {0}", item.Reference);
+                        }
+                        else
+                        {
+                            try
                             {
-                                Log.Warn("Product does't exists. It will be added later. Reference: {0}", item.Reference);
+                                Log.Debug("Updating item {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                                _productUpdater.Update(existingProd.First(), item, processingPriceType);
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                try
-                                {
-                                    Log.Debug("Updating balance {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
-                                    _productUpdater.Update(existingProd.First(), item, processingPriceType);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Log.Error("Balance update error. Reference: {0}; {1}", item.Reference, ex);
-                                }
+                                Log.Error("Update error. Reference: {0}; {1}", item.Reference, ex);
                             }
                         }
                         break;
@@ -100,8 +105,15 @@ namespace Supplier2Presta.Service.ShopApiProcessors
                         {
                             try
                             {
-                                Log.Debug("Disabling product {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
-                                _productRemover.Remove(existingProd.First());
+                                if (processingPriceType != PriceType.Discount)
+                                {
+                                    Log.Info("Disabling product {0} from {1}; Reference: {2}", currentCount, priceItems.Count, item.Reference);
+                                    _productRemover.Remove(existingProd.First());
+                                }
+                                else
+                                {
+                                    _productUpdater.RemoveDiscountInfo(item, existingProd.First());
+                                }
                             }
                             catch (Exception ex)
                             {

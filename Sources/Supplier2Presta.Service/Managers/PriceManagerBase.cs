@@ -41,7 +41,7 @@ namespace Supplier2Presta.Service.Managers
             try
             {
                 Log.Debug("Building the diff");
-                var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult.PriceItems);
+                var diff = _differ.GetDiff(newPriceLoadResult.PriceItems, oldPriceLoadResult != null ? oldPriceLoadResult.PriceItems : null);
 
                 switch (priceType)
                 {

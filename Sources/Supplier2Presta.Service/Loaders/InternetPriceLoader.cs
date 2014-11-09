@@ -22,6 +22,7 @@ namespace Supplier2Presta.Service.Loaders
         {
             var ext = Path.GetExtension(uri);
             var newPriceFileName = string.Format("price_{0}{1}", DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"), ext);
+            newPriceFileName = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), newPriceFileName);
             if (uri.StartsWith("http"))
             {
                 using (var webClient = new WebClient())

@@ -1,4 +1,5 @@
 ﻿using Bukimedia.PrestaSharp.Entities;
+using NLog;
 using Supplier2Presta.Service.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,8 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
 {
     class StockProcessor
     {
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
         private readonly ShopApiFactory _apiFactory;
         private readonly CombinationsProcessor _combinationProcessor;
 
@@ -27,6 +30,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
                 var stock = this.GetStockValue(product, assort);
                 if (stock.quantity != assort.Balance)
                 {
+                    Log.Info("Balance changed from {0} to {1}. Reference: {2}", stock.quantity, assort.Balance, priceItem.Reference);
                     stock.quantity = assort.Balance;
                     _apiFactory.StockFactory.Update(stock);
                 }
@@ -38,7 +42,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
             combination combination = null;
             if (!string.IsNullOrWhiteSpace(assort.Size) || !string.IsNullOrWhiteSpace(assort.Color) || !string.IsNullOrWhiteSpace(assort.Reference))
             {
-                combination = _combinationProcessor.GetCombination(product, assort);
+                combination = _combinationProcessor.GetOrCreateCombination(product, assort);
             }
 
             var filter = new Dictionary<string, string>

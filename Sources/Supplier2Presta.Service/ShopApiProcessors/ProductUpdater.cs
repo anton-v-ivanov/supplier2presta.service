@@ -39,25 +39,15 @@ namespace Supplier2Presta.Service.ShopApiProcessors
 
         private void UpdateProductPriceAndActivity(PriceItem item, product product)
         {
-            bool smthChanged = false;
-
             // price of onSale products is updated by special file
             if (product.on_sale == 0 &&
-                (product.price != Convert.ToDecimal(item.RetailPrice) || product.wholesale_price != Convert.ToDecimal(item.WholesalePrice)))
-            {
-                product.price = Convert.ToDecimal(item.RetailPrice);
-                product.wholesale_price = Convert.ToDecimal(item.WholesalePrice);
-                smthChanged = true;
-            }
-
-            if (product.active != Convert.ToInt32(item.Active))
+                (product.active != Convert.ToInt32(item.Active) ||
+                product.price != Convert.ToDecimal(item.RetailPrice) || 
+                product.wholesale_price != Convert.ToDecimal(item.WholesalePrice)))
             {
                 product.active = Convert.ToInt32(item.Active);
-                smthChanged = true;
-            }
-
-            if (smthChanged)
-            {
+                product.price = Convert.ToDecimal(item.RetailPrice);
+                product.wholesale_price = Convert.ToDecimal(item.WholesalePrice);
                 Log.Debug("Updating price. Reference: {0}", item.Reference);
                 _apiFactory.ProductFactory.Update(product);
             }
@@ -67,18 +57,34 @@ namespace Supplier2Presta.Service.ShopApiProcessors
         {
             if (!SameMetaInfo(item, product))
             {
-                ProductsMapper.FillMetaInfo(item, product);
+                product = ProductsMapper.FillMetaInfo(item, product);
+				if (product.on_sale == 1) 
+				{
+					var specialPriceRule = GetSpecialPriceRule(product);
+					if (specialPriceRule != null)
+					{
+						if (specialPriceRule.reduction_type != "percentage") 
+						{
+							throw new NotImplementedException();
+						}
+
+						product.price = product.price / specialPriceRule.reduction;
+					}
+				}
                 Log.Debug("Updating meta info. Reference: {0}", item.Reference);
                 _apiFactory.ProductFactory.Update(product);
             }
         }
 
-        private void UpdateDiscountInfo(PriceItem item, product product)
+        public void UpdateDiscountInfo(PriceItem item, product product)
         {
-            if (product.on_sale != Convert.ToInt32(item.OnSale))
+			specific_price specialPriceRule = null;
+
+			if (product.on_sale == 1)
+				specialPriceRule = GetSpecialPriceRule(product);
+
+			if ((product.on_sale == 1 || item.OnSale) && product.on_sale != Convert.ToInt32(item.OnSale))
             {
-                var filter = new Dictionary<string, string> { { "id_product", Convert.ToString(product.id) } };
-                var specialPriceRule = _apiFactory.SpecialPriceFactory.GetByFilter(filter, null, null).FirstOrDefault();
                 if (specialPriceRule != null)
                 {
                     if (!item.OnSale && product.on_sale == 1)
@@ -118,8 +124,14 @@ namespace Supplier2Presta.Service.ShopApiProcessors
                 }
             }
 
+			var productRetailPrice = Convert.ToDecimal(item.RetailPrice);
+			if (specialPriceRule != null) 
+			{
+				productRetailPrice = Math.Ceiling(productRetailPrice * specialPriceRule.reduction);
+			}
+
             if (product.on_sale != Convert.ToInt32(item.OnSale) ||
-                product.price != Convert.ToDecimal(item.RetailPrice) ||
+				product.price !=  productRetailPrice ||
                 product.wholesale_price != Convert.ToDecimal(item.WholesalePrice))
             {
                 product.on_sale = Convert.ToInt32(item.OnSale);
@@ -129,6 +141,31 @@ namespace Supplier2Presta.Service.ShopApiProcessors
                 _apiFactory.ProductFactory.Update(product);
             }
         }
+
+        internal void RemoveDiscountInfo(PriceItem item, product product)
+        {
+            var specialPriceRule = GetSpecialPriceRule(product);
+            if(specialPriceRule != null)
+            {
+                Log.Info("Removing special price. Reference: {0}", item.Reference);
+                _apiFactory.SpecialPriceFactory.Delete(specialPriceRule);
+            }
+
+            if (product.on_sale == 1)
+            {
+                product.on_sale = 0;
+                product.price = Convert.ToDecimal(item.RetailPrice);
+                Log.Debug("Removing discount. Reference: {0}", item.Reference);
+                _apiFactory.ProductFactory.Update(product);
+            }
+        }
+
+		private specific_price GetSpecialPriceRule(product product)
+		{
+			var filter = new Dictionary<string, string> { { "id_product", Convert.ToString (product.id) } };
+			var specialPriceRule = _apiFactory.SpecialPriceFactory.GetByFilter(filter, null, null).FirstOrDefault();
+			return specialPriceRule;
+		}
 
         private bool SameMetaInfo(PriceItem priceItem, product product)
         {
@@ -149,15 +186,9 @@ namespace Supplier2Presta.Service.ShopApiProcessors
                 !product.meta_keywords.Any())
                 return false;
 
-            var words = priceItem.Name.Split(new char[] { ' ' }).Where(s => s.Length > 3);
-            if (words.Any())
-            {
-                foreach (var word in words)
-                {
-                    if (!product.meta_keywords.Exists(s => s.Value.Equals(word, StringComparison.OrdinalIgnoreCase)))
-                        return false;
-                }
-            }
+
+            if (!product.meta_keywords.Exists(s => s.Value.Equals(string.Format("Купить {0} в Москве", priceItem.Name), StringComparison.OrdinalIgnoreCase)))
+                return false;
 
             return true;
         }

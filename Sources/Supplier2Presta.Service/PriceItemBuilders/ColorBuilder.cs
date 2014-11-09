@@ -38,7 +38,6 @@ namespace Supplier2Presta.Service.PriceItemBuilders
                     return _colorCodes[name];
             }
 
-            Log.Warn("Unknown color: {0}", colorName);
             return string.Empty;
         }
 
@@ -126,6 +125,8 @@ namespace Supplier2Presta.Service.PriceItemBuilders
                         return "Сиреневый";
                     case "Фуксия":
                         return "Сиреневый";
+                    case "Зебра с синим":
+                        return "Зебра";
                     default:
                         break;
                 }

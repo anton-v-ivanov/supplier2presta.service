@@ -22,10 +22,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Commandlineparameters>t:Discount</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -148,7 +147,7 @@
       <Name>PrestaSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\RestSharp\RestSharp.csproj">
-      <Project>{2ececfbf-5f3e-40ee-a963-72336dc7abe2}</Project>
+      <Project>{2ECECFBF-5F3E-40EE-A963-72336DC7ABE2}</Project>
       <Name>RestSharp</Name>
     </ProjectReference>
   </ItemGroup>
