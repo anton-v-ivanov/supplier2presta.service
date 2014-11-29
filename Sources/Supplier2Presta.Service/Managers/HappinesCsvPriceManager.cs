@@ -1,19 +1,11 @@
-﻿using NLog;
+﻿using System.IO;
+using System.Reflection;
+using System.Xml.Serialization;
+using NLog;
 using Supplier2Presta.Service.Config;
-using Supplier2Presta.Service.Diffs;
 using Supplier2Presta.Service.Entities;
-using Supplier2Presta.Service.Entities.Exceptions;
 using Supplier2Presta.Service.Loaders;
 using Supplier2Presta.Service.PriceBuilders;
-using Supplier2Presta.Service.PriceItemBuilders;
-using Supplier2Presta.Service.ShopApiProcessors;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace Supplier2Presta.Service.Managers
 {
@@ -28,12 +20,12 @@ namespace Supplier2Presta.Service.Managers
 
         public PriceUpdateResult CheckUpdates(PriceType type, bool forceUpdate)
         {
-            var priceFormat = GetPriceFormat(_settings.PriceFormatFile);
+            var priceFormat = GetPriceFormat(Settings.PriceFormatFile);
             
-            var csvPriceLoader = new CsvPriceLoader(_settings.PriceEncoding, priceFormat);
+            var csvPriceLoader = new CsvPriceLoader(Settings.PriceEncoding, priceFormat);
             var newPriceLoader = new SingleFilePriceLoader(csvPriceLoader);
 
-            var newPriceLoadResult = newPriceLoader.Load<string>(_settings.Url);
+            var newPriceLoadResult = newPriceLoader.Load<string>(Settings.Url);
             
             if (!newPriceLoadResult.Success)
             {
@@ -46,17 +38,17 @@ namespace Supplier2Presta.Service.Managers
             if (!forceUpdate)
             {
                 var oldPriceLoader = new NewestFileSystemPriceLoader(csvPriceLoader);
-                oldPriceLoadResult = oldPriceLoader.Load<string>(_archiveDirectory);
+                oldPriceLoadResult = oldPriceLoader.Load<string>(ArchiveDirectory);
             }
 
-            return base.Process(newPriceLoadResult, oldPriceLoadResult, type);
+            return Process(newPriceLoadResult, oldPriceLoadResult, type);
         }
 
         private PriceFormat GetPriceFormat(string priceFormatFile)
         {
             var serializer = new XmlSerializer(typeof(PriceFormat));
             PriceFormat priceFormat;
-            var priceFormatFilePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), priceFormatFile);
+            var priceFormatFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), priceFormatFile);
             using (var stream = new FileStream(priceFormatFilePath, FileMode.Open))
             {
                 priceFormat = (PriceFormat)serializer.Deserialize(stream);

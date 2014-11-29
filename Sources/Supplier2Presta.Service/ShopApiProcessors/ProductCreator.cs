@@ -1,13 +1,10 @@
-﻿using NLog;
+﻿using System;
+using System.Linq;
+using NLog;
 using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Entities.Exceptions;
 using Supplier2Presta.Service.Helpers;
 using Supplier2Presta.Service.ShopApiProcessors.EntityProcessors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Supplier2Presta.Service.ShopApiProcessors
 {
@@ -37,6 +34,11 @@ namespace Supplier2Presta.Service.ShopApiProcessors
 
         public void Create(PriceItem priceItem)
         {
+            if (string.IsNullOrWhiteSpace(priceItem.PhotoSmall) && (priceItem.Photos == null || !priceItem.Photos.Any()))
+            {
+                return;
+            }
+
             var product = ProductsMapper.Create(priceItem);
 
             var category = _categoryProcessor.GetCategoryValue(priceItem);
@@ -73,19 +75,21 @@ namespace Supplier2Presta.Service.ShopApiProcessors
 
             if (priceItem.Photos == null || !priceItem.Photos.Any())
             {
-                var image1 = _imageProcessor.GetImageValue(priceItem.PhotoSmall, product);
-                product = ProductsMapper.MapImage(product, image1);
-            }
-
-            foreach (var photo in priceItem.Photos)
-            {
-                var image = _imageProcessor.GetImageValue(photo, product);
+                var image = _imageProcessor.GetImageValue(priceItem.PhotoSmall, product);
                 product = ProductsMapper.MapImage(product, image);
+            }
+            else
+            {
+                foreach (var photo in priceItem.Photos)
+                {
+                    var image = _imageProcessor.GetImageValue(photo, product);
+                    product = ProductsMapper.MapImage(product, image);
+                }
             }
 
             if (product.associations.images == null || !product.associations.images.Any())
             {
-                Log.Error("Unable to load product photos. Product will be deleted. Product reference: {0}", priceItem.Reference);
+                Log.Warn("Unable to load product photos. Product will be deleted. Product reference: {0}", priceItem.Reference);
                 _apiFactory.ProductFactory.Delete(product.id.Value);
                 Log.Debug("Product deleted. Reference: {0}", priceItem.Reference);
                 throw new PhotoLoadException();

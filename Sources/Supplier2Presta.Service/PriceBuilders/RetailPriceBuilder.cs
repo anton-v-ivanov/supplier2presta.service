@@ -1,10 +1,7 @@
-﻿using Supplier2Presta.Service.Config;
-using Supplier2Presta.Service.Entities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Supplier2Presta.Service.Config;
+using Supplier2Presta.Service.Entities;
 
 namespace Supplier2Presta.Service.PriceBuilders
 {
@@ -20,7 +17,7 @@ namespace Supplier2Presta.Service.PriceBuilders
         public float Build(PriceItem priceItem)
         {
             float result;
-            var elements = _multiplicators.Cast<MultiplicatorRuleElement>();
+            var elements = _multiplicators.Cast<MultiplicatorRuleElement>().ToList();
             
             var referenceElement = elements.FirstOrDefault(e => e.ProductReference.Equals(priceItem.Reference, StringComparison.OrdinalIgnoreCase));
             if(referenceElement != null)

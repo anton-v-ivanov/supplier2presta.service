@@ -1,11 +1,13 @@
-﻿using Bukimedia.PrestaSharp.Entities;
-using Supplier2Presta.Service.Entities;
-using Supplier2Presta.Service.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Bukimedia.PrestaSharp.Entities;
+using Bukimedia.PrestaSharp.Entities.AuxEntities;
+using Supplier2Presta.Service.Entities;
+using Supplier2Presta.Service.Helpers;
+using language = Bukimedia.PrestaSharp.Entities.AuxEntities.language;
+using product = Bukimedia.PrestaSharp.Entities.product;
+using product_option_value = Bukimedia.PrestaSharp.Entities.product_option_value;
 
 namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
 {
@@ -22,17 +24,17 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
         {
             foreach (var assort in priceItem.Assort)
             {
-                this.GetOrCreateCombination(product, assort);
+                GetOrCreateCombination(product, assort);
             }
         }
 
         internal combination GetOrCreateCombination(product product, Assort assort)
         {
-            Dictionary<string, string> filter = null;
+            Dictionary<string, string> filter;
             List<combination> combinations = null;
             if (!string.IsNullOrWhiteSpace(assort.Reference))
             {
-                filter = new Dictionary<string, string> { { "reference", assort.Reference.ToString() } };
+                filter = new Dictionary<string, string> { { "reference", assort.Reference } };
                 combinations = _apiFactory.CombinationFactory.GetByFilter(filter, null, null);
             }
 
@@ -44,13 +46,13 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
             product_option_value colorOptionValue = null;
             if (!string.IsNullOrWhiteSpace(assort.Color))
             {
-                colorOptionValue = this.GetOptionValue(assort.Color, assort.ColorCode, _apiFactory.ColorOption.id.Value);
+                colorOptionValue = GetOptionValue(assort.Color, assort.ColorCode, _apiFactory.ColorOption.id.Value);
             }
 
             product_option_value sizeOptionValue = null;
             if (!string.IsNullOrWhiteSpace(assort.Size))
             {
-                sizeOptionValue = this.GetOptionValue(assort.Size, string.Empty, _apiFactory.SizeOption.id.Value);
+                sizeOptionValue = GetOptionValue(assort.Size, string.Empty, _apiFactory.SizeOption.id.Value);
             }
 
             if (colorOptionValue == null && sizeOptionValue == null)
@@ -62,7 +64,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
             combinations = _apiFactory.CombinationFactory.GetByFilter(filter, null, null);
             if (combinations == null || !combinations.Any())
             {
-                return this.CreateCombination(product, assort, sizeOptionValue, colorOptionValue, true);
+                return CreateCombination(product, assort, sizeOptionValue, colorOptionValue, true);
             }
             else
             {
@@ -92,7 +94,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
                     }
                 }
 
-                return this.CreateCombination(product, assort, sizeOptionValue, colorOptionValue, false);
+                return CreateCombination(product, assort, sizeOptionValue, colorOptionValue, false);
             }
         }
 
@@ -119,7 +121,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
                 id_product = product.id,
                 reference = assort.Reference,
                 ean13 = assort.Ean13,
-                associations = new Bukimedia.PrestaSharp.Entities.AuxEntities.AssociationsCombination(),
+                associations = new AssociationsCombination(),
                 minimal_quantity = 1,
                 default_on = Convert.ToInt32(isDefault),
             };
@@ -147,7 +149,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
             {
                 optionValue = new product_option_value
                 {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, option) },
+                    name = new List<language> { new language(1, option) },
                     id_attribute_group = optionId,
                     color = colorCode,
                 };

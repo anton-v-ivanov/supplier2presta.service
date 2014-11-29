@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-
 using Supplier2Presta.Service.Entities;
-using Supplier2Presta.Service.PriceItemBuilders;
 
 namespace Supplier2Presta.Service.Diffs
 {
@@ -42,8 +41,8 @@ namespace Supplier2Presta.Service.Diffs
             foreach (var assort in item.Assort)
             {
                 var oldAssort = oldItem.Assort
-                    .FirstOrDefault(s => s.Size.Equals(assort.Size, System.StringComparison.OrdinalIgnoreCase) && 
-                        s.Color.Equals(assort.Color, System.StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(s => s.Size.Equals(assort.Size, StringComparison.OrdinalIgnoreCase) && 
+                        s.Color.Equals(assort.Color, StringComparison.OrdinalIgnoreCase));
                 
                 if(oldAssort != null && oldAssort.Balance != assort.Balance)
                 {

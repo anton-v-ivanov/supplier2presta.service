@@ -1,13 +1,11 @@
-﻿using Bukimedia.PrestaSharp.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Bukimedia.PrestaSharp.Entities;
 using NLog;
 using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Helpers;
 using Supplier2Presta.Service.ShopApiProcessors.EntityProcessors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Supplier2Presta.Service.ShopApiProcessors
 {
@@ -26,14 +24,14 @@ namespace Supplier2Presta.Service.ShopApiProcessors
         public void Update(product product, PriceItem item, PriceType processingPriceType)
         {
             _stockProcessor.UpdateStockValue(item, product);
-            this.UpdateMetaInfo(item, product);
+            UpdateMetaInfo(item, product);
             if (processingPriceType == PriceType.Stock)
             {
-                this.UpdateProductPriceAndActivity(item, product);
+                UpdateProductPriceAndActivity(item, product);
             }
             if (processingPriceType == PriceType.Discount)
             {
-                this.UpdateDiscountInfo(item, product);
+                UpdateDiscountInfo(item, product);
             }
         }
 

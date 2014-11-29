@@ -2,7 +2,7 @@
 
 namespace Supplier2Presta.Service.Config
 {
-    public sealed partial class MultiplicatorRuleElement : ConfigurationElement
+    public sealed class MultiplicatorRuleElement : ConfigurationElement
     {
         [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
         public string Name

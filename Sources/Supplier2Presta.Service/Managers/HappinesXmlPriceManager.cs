@@ -1,12 +1,11 @@
-﻿using NLog;
+﻿using System;
+using NLog;
 using Supplier2Presta.Service.Config;
 using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Entities.XmlPrice;
 using Supplier2Presta.Service.Loaders;
 using Supplier2Presta.Service.PriceBuilders;
 using Supplier2Presta.Service.PriceItemBuilders;
-using System;
-using System.IO;
 
 namespace Supplier2Presta.Service.Managers
 {
@@ -32,18 +31,18 @@ namespace Supplier2Presta.Service.Managers
             switch (type)
             {
                 case PriceType.Stock:
-                    newPriceLoadResult = newPriceLoader.Load<StockXmlItemList>(_settings.Url);
+                    newPriceLoadResult = newPriceLoader.Load<StockXmlItemList>(Settings.Url);
                     if (!forceUpdate)
                     {
-                        oldPriceLoadResult = oldPriceLoader.Load<StockXmlItemList>(_archiveDirectory);
+                        oldPriceLoadResult = oldPriceLoader.Load<StockXmlItemList>(ArchiveDirectory);
                     }
                     break;
 
                 case PriceType.Full:
-                    newPriceLoadResult = newPriceLoader.Load<FullXmlItemList>(_settings.Url);
+                    newPriceLoadResult = newPriceLoader.Load<FullXmlItemList>(Settings.Url);
                     if (!forceUpdate)
                     {
-                        oldPriceLoadResult = oldPriceLoader.Load<FullXmlItemList>(_archiveDirectory);
+                        oldPriceLoadResult = oldPriceLoader.Load<FullXmlItemList>(ArchiveDirectory);
                     }
                     break;
 
@@ -60,7 +59,7 @@ namespace Supplier2Presta.Service.Managers
                 return new PriceUpdateResult(PriceUpdateResultStatus.PriceLoadFail);
             }
                         
-            return base.Process(newPriceLoadResult, oldPriceLoadResult, type);
+            return Process(newPriceLoadResult, oldPriceLoadResult, type);
         }
     }
 }

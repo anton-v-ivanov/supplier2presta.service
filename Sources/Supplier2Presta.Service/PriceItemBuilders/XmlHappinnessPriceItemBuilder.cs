@@ -1,20 +1,14 @@
-﻿using Supplier2Presta.Service.Entities;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
+using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Entities.XmlPrice;
 using Supplier2Presta.Service.Helpers;
-using Supplier2Presta.Service.PriceItemBuilders;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace Supplier2Presta.Service.PricefileItemBuilders
+namespace Supplier2Presta.Service.PriceItemBuilders
 {
     public class XmlHappinnessPriceItemBuilder : IPriceItemBuilder<XmlItem>
     {
-        private readonly Regex Ean13Regex = new Regex("[0-9]{12}", RegexOptions.Compiled);
+        private readonly Regex _ean13Regex = new Regex("[0-9]{12}", RegexOptions.Compiled);
         private readonly IColorBuilder _colorCodeBuilder;
 
         public XmlHappinnessPriceItemBuilder(IColorBuilder colorCodeBuilder)
@@ -30,8 +24,8 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
                 Manufacturer = fileItem.Vendor,
                 Name = !string.IsNullOrWhiteSpace(fileItem.Name) ? fileItem.Name.MakeSafeName() : string.Empty,
                 PhotoSmall = fileItem.PictureSmall,
-                Reference = "200" + fileItem.Id.Trim(new[] { '"', ';' }),
-                RetailPrice = float.Parse(fileItem.Price.Trim(new[] { '"', ';' }).Replace(" ", "").Replace(",", "."), new NumberFormatInfo { NumberDecimalSeparator = "." }),
+                Reference = "200" + fileItem.Id.Trim('"', ';'),
+                RetailPrice = float.Parse(fileItem.Price.Trim('"', ';').Replace(" ", "").Replace(",", "."), new NumberFormatInfo { NumberDecimalSeparator = "." }),
                 
                 SupplierName = "happiness",
                 SupplierReference = fileItem.VendorCode,
@@ -65,7 +59,7 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
 
             if (!string.IsNullOrWhiteSpace(result.Ean13) && result.Ean13.Length > 13)
             {
-                result.Ean13 = Ean13Regex.Match(result.Ean13).Value.Substring(0, 13);
+                result.Ean13 = _ean13Regex.Match(result.Ean13).Value.Substring(0, 13);
             }
 
             if(fileItem.Category != null)
@@ -82,7 +76,7 @@ namespace Supplier2Presta.Service.PricefileItemBuilders
             if (!string.IsNullOrEmpty(fileItem.Description))
             {
                 string shortDescription;
-                var parameters = Helper.ParseDescription(fileItem.Description.Trim(new[] { '"', ';' }), out shortDescription);
+                var parameters = Helper.ParseDescription(fileItem.Description.Trim('"', ';'), out shortDescription);
 
                 result.ShortDescription = shortDescription;
                 result.Description = string.Empty;

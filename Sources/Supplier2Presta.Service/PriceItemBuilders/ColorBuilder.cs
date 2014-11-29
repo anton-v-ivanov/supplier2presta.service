@@ -1,16 +1,10 @@
-﻿using NLog;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Supplier2Presta.Service.PriceItemBuilders
 {
     public class ColorBuilder : IColorBuilder
     {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
-
         private readonly IDictionary<string, string> _colorCodes;
 
         public ColorBuilder(IDictionary<string, string> colorCodes)
@@ -92,8 +86,6 @@ namespace Supplier2Presta.Service.PriceItemBuilders
                             return "Сиреневый";
                         case "Фуксия":
                             return "Сиреневый";
-                        default:
-                            break;
                     }
                     return name;
                 }
@@ -127,8 +119,6 @@ namespace Supplier2Presta.Service.PriceItemBuilders
                         return "Сиреневый";
                     case "Зебра с синим":
                         return "Зебра";
-                    default:
-                        break;
                 }
                 return colorName;
             }

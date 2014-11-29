@@ -2,7 +2,7 @@
 
 namespace Supplier2Presta.Service.Config
 {
-    public sealed partial class MultiplicatorsElementCollection : ConfigurationElementCollection
+    public sealed class MultiplicatorsElementCollection : ConfigurationElementCollection
     {
         [ConfigurationProperty("default", IsRequired = true)]
         public float Default
@@ -27,7 +27,7 @@ namespace Supplier2Presta.Service.Config
         {
             get
             {
-                return ((MultiplicatorRuleElement)(this.BaseGet(i)));
+                return ((MultiplicatorRuleElement)(BaseGet(i)));
             }
         }
 

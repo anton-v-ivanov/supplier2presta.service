@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Bukimedia.PrestaSharp.Entities;
 using NLog;
 using Supplier2Presta.Service.Entities;
-using System.Collections.Generic;
 using Supplier2Presta.Service.Entities.Exceptions;
 
 namespace Supplier2Presta.Service.ShopApiProcessors
@@ -13,8 +12,8 @@ namespace Supplier2Presta.Service.ShopApiProcessors
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         
         private readonly ShopApiFactory _apiFactory;
-        private string _apiUrl;
-        private string _accessToken;
+        private readonly string _apiUrl;
+        private readonly string _accessToken;
         
         private ProductUpdater _productUpdater;
         private ProductRemover _productRemover;

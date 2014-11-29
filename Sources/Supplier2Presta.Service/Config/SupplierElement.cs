@@ -3,7 +3,7 @@ using System.Configuration;
 
 namespace Supplier2Presta.Service.Config
 {
-    public sealed partial class SupplierElement : ConfigurationElement
+    public sealed class SupplierElement : ConfigurationElement
     {
         [ConfigurationProperty("name", IsRequired = true, IsKey = true)]
         public string Name

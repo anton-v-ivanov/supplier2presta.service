@@ -1,10 +1,9 @@
-﻿using Bukimedia.PrestaSharp.Entities;
-using Bukimedia.PrestaSharp.Factories;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Bukimedia.PrestaSharp.Entities;
+using Bukimedia.PrestaSharp.Factories;
+using language = Bukimedia.PrestaSharp.Entities.AuxEntities.language;
 
 namespace Supplier2Presta.Service.ShopApiProcessors
 {
@@ -38,24 +37,23 @@ namespace Supplier2Presta.Service.ShopApiProcessors
         
         public void InitFactories(string url, string account)
         {
-            string BaseUrl = url;
-            string Account = account;
-            const string Password = "";
-            ProductFactory = new ProductFactory(BaseUrl, Account, Password);
-            CategoryFactory = new CategoryFactory(BaseUrl, Account, Password);
-            StockFactory = new StockAvailableFactory(BaseUrl, Account, Password);
-            FeatureValuesFactory = new ProductFeatureValueFactory(BaseUrl, Account, Password);
-            ImageFactory = new ImageFactory(BaseUrl, Account, Password);
-            ProductSupplierFactory = new ProductSupplierFactory(BaseUrl, Account, Password);
+            string baseUrl = url;
+            const string password = "";
+            ProductFactory = new ProductFactory(baseUrl, account, password);
+            CategoryFactory = new CategoryFactory(baseUrl, account, password);
+            StockFactory = new StockAvailableFactory(baseUrl, account, password);
+            FeatureValuesFactory = new ProductFeatureValueFactory(baseUrl, account, password);
+            ImageFactory = new ImageFactory(baseUrl, account, password);
+            ProductSupplierFactory = new ProductSupplierFactory(baseUrl, account, password);
             
-            SupplierFactory = new SupplierFactory(BaseUrl, Account, Password);
+            SupplierFactory = new SupplierFactory(baseUrl, account, password);
             Suppliers = SupplierFactory.GetAll();
 
-            ManufacturerFactory = new ManufacturerFactory(BaseUrl, Account, Password);
+            ManufacturerFactory = new ManufacturerFactory(baseUrl, account, password);
 
-            SpecialPriceFactory = new SpecificPriceFactory(BaseUrl, Account, Password);
+            SpecialPriceFactory = new SpecificPriceFactory(baseUrl, account, password);
 
-            var featuresFactory = new ProductFeatureFactory(BaseUrl, Account, Password);
+            var featuresFactory = new ProductFeatureFactory(baseUrl, account, password);
             var features = featuresFactory.GetAll();
             
             //SizeFeature = features.FirstOrDefault(f => f.name.First().Value.Equals("Размер", StringComparison.InvariantCultureIgnoreCase));
@@ -66,7 +64,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors
             {
                 BatteryFeature = new product_feature()
                 {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Батарейки") }
+                    name = new List<language> { new language(1, "Батарейки") }
                 };
                 BatteryFeature = featuresFactory.Add(BatteryFeature);
             }
@@ -76,7 +74,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors
             {
                 MaterialFeature = new product_feature()
                 {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Материал") }
+                    name = new List<language> { new language(1, "Материал") }
                 };
                 MaterialFeature = featuresFactory.Add(MaterialFeature);
             }
@@ -86,7 +84,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors
             {
                 CountryFeature = new product_feature()
                 {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Страна") }
+                    name = new List<language> { new language(1, "Страна") }
                 };
                 CountryFeature = featuresFactory.Add(CountryFeature);
             }
@@ -96,7 +94,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors
             {
                 PackingFeature = new product_feature()
                 {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Упаковка") }
+                    name = new List<language> { new language(1, "Упаковка") }
                 };
                 PackingFeature = featuresFactory.Add(PackingFeature);
             }
@@ -106,7 +104,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors
             {
                 LengthFeature = new product_feature()
                 {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Длина") }
+                    name = new List<language> { new language(1, "Длина") }
                 };
                 LengthFeature = featuresFactory.Add(LengthFeature);
             }
@@ -116,20 +114,20 @@ namespace Supplier2Presta.Service.ShopApiProcessors
             {
                 DiameterFeature = new product_feature()
                 {
-                    name = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, "Диаметр") }
+                    name = new List<language> { new language(1, "Диаметр") }
                 };
                 DiameterFeature = featuresFactory.Add(DiameterFeature);
             }
 
-            var optionsFactory = new ProductOptionFactory(BaseUrl, Account, Password);
+            var optionsFactory = new ProductOptionFactory(baseUrl, account, password);
             var options = optionsFactory.GetAll();
 
             SizeOption = options.First(f => f.name.First().Value.Equals("size", StringComparison.InvariantCultureIgnoreCase));
             ColorOption = options.First(f => f.name.First().Value.Equals("color", StringComparison.InvariantCultureIgnoreCase));
 
-            OptionsValueFactory = new ProductOptionValueFactory(BaseUrl, Account, Password);
+            OptionsValueFactory = new ProductOptionValueFactory(baseUrl, account, password);
 
-            CombinationFactory = new CombinationFactory(BaseUrl, Account, Password);
+            CombinationFactory = new CombinationFactory(baseUrl, account, password);
         }
     }
 }

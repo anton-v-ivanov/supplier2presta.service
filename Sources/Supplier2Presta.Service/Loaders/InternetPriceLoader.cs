@@ -1,17 +1,13 @@
-﻿using Supplier2Presta.Service.Entities.XmlPrice;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace Supplier2Presta.Service.Loaders
 {
     public class SingleFilePriceLoader : IPriceLoader
     {
-        private IPriceLoader _internalLoader;
+        private readonly IPriceLoader _internalLoader;
 
         public SingleFilePriceLoader(IPriceLoader priceLoader)
         {
@@ -22,7 +18,7 @@ namespace Supplier2Presta.Service.Loaders
         {
             var ext = Path.GetExtension(uri);
             var newPriceFileName = string.Format("price_{0}{1}", DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"), ext);
-            newPriceFileName = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), newPriceFileName);
+            newPriceFileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), newPriceFileName);
             if (uri.StartsWith("http"))
             {
                 using (var webClient = new WebClient())

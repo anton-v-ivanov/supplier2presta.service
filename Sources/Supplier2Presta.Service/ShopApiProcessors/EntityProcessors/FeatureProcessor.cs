@@ -1,10 +1,8 @@
-﻿using Bukimedia.PrestaSharp.Entities;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Bukimedia.PrestaSharp.Entities;
+using language = Bukimedia.PrestaSharp.Entities.AuxEntities.language;
 
 namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
 {
@@ -33,7 +31,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
                 featureValue = new product_feature_value
                 {
                     id_feature = feature.id,
-                    value = new List<Bukimedia.PrestaSharp.Entities.AuxEntities.language> { new Bukimedia.PrestaSharp.Entities.AuxEntities.language(1, value) }
+                    value = new List<language> { new language(1, value) }
                 };
                 featureValue = _apiFactory.FeatureValuesFactory.Add(featureValue);
             }

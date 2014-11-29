@@ -1,12 +1,9 @@
-﻿using Bukimedia.PrestaSharp.Entities;
-using NLog;
-using Supplier2Presta.Service.Entities;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Bukimedia.PrestaSharp.Entities;
+using NLog;
+using Supplier2Presta.Service.Entities;
 
 namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
 {
@@ -27,7 +24,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
         {
             foreach (var assort in priceItem.Assort)
             {
-                var stock = this.GetStockValue(product, assort);
+                var stock = GetStockValue(product, assort);
                 if (stock.quantity != assort.Balance)
                 {
                     Log.Info("Balance changed from {0} to {1}. Reference: {2}", stock.quantity, assort.Balance, priceItem.Reference);
@@ -55,27 +52,15 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
             {
                 return CreateStock(product, assort, combination);
             }
-            else
-            {
-                stock_available stock;
-                if (combination != null)
-                {
-                    stock = stocks.FirstOrDefault(s => s.id_product_attribute == combination.id);
-                }
-                else
-                {
-                    stock = stocks.FirstOrDefault(s => s.id_product == product.id);
-                }
 
-                if(stock == null)
-                {
-                    return CreateStock(product, assort, combination);
-                }
-                return stock;
-            }
+            var stock = combination != null 
+                ? stocks.FirstOrDefault(s => s.id_product_attribute == combination.id) 
+                : stocks.FirstOrDefault(s => s.id_product == product.id);
+
+            return stock ?? CreateStock(product, assort, combination);
         }
 
-        private stock_available CreateStock(product product, Assort assort, Bukimedia.PrestaSharp.Entities.combination combination)
+        private stock_available CreateStock(product product, Assort assort, combination combination)
         {
             var stock = new stock_available
             {

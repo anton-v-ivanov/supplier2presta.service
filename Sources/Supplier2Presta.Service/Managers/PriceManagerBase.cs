@@ -1,4 +1,7 @@
-﻿using NLog;
+﻿using System;
+using System.IO;
+using System.Linq;
+using NLog;
 using Supplier2Presta.Service.Config;
 using Supplier2Presta.Service.Diffs;
 using Supplier2Presta.Service.Entities;
@@ -6,12 +9,6 @@ using Supplier2Presta.Service.Entities.Exceptions;
 using Supplier2Presta.Service.Loaders;
 using Supplier2Presta.Service.PriceBuilders;
 using Supplier2Presta.Service.ShopApiProcessors;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Supplier2Presta.Service.Managers
 {
@@ -23,16 +20,16 @@ namespace Supplier2Presta.Service.Managers
         private readonly string _apiUrl;
         private readonly string _apiAccessToken;
         private readonly IRetailPriceBuilder _retailPriceBuilder;
-        protected readonly SupplierElement _settings;
-        protected string _archiveDirectory;
+        protected readonly SupplierElement Settings;
+        protected string ArchiveDirectory;
 
         public PriceManagerBase(SupplierElement settings, string archiveDirectory, IRetailPriceBuilder retailPriceBuilder, string apiUrl, string apiAccessToken)
         {
-            _settings = settings;
+            Settings = settings;
             _apiUrl = apiUrl;
             _apiAccessToken = apiAccessToken;
             _retailPriceBuilder = retailPriceBuilder;
-            _archiveDirectory = archiveDirectory;
+            ArchiveDirectory = archiveDirectory;
             _differ = new Differ();
         }
 
@@ -52,10 +49,8 @@ namespace Supplier2Presta.Service.Managers
                     case PriceType.Full:
                         break;
                     case PriceType.Discount:
-                        diff.NewItems.Values.ToList().ForEach(p => { p.OnSale = true; p.DiscountValue = _settings.Discount; });
-                        diff.UpdatedItems.Values.ToList().ForEach(p => { p.OnSale = true; p.DiscountValue = _settings.Discount; });
-                        break;
-                    default:
+                        diff.NewItems.Values.ToList().ForEach(p => { p.OnSale = true; p.DiscountValue = Settings.Discount; });
+                        diff.UpdatedItems.Values.ToList().ForEach(p => { p.OnSale = true; p.DiscountValue = Settings.Discount; });
                         break;
                 }
                 
@@ -88,7 +83,7 @@ namespace Supplier2Presta.Service.Managers
 
                 if (diff.DeletedItems.Any() || diff.NewItems.Any() || diff.UpdatedItems.Any())
                 {
-                    SetLastPrice(newPriceLoadResult.FilePath, _archiveDirectory);
+                    SetLastPrice(newPriceLoadResult.FilePath, ArchiveDirectory);
                 }
                 else
                 {

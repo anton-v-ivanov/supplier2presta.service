@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 
 namespace Supplier2Presta.Service.Entities
 {
