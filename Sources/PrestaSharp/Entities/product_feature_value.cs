@@ -15,7 +15,7 @@ namespace Bukimedia.PrestaSharp.Entities
         /// <summary>
         /// It´s a logical bool.
         /// </summary>
-        public int custom { get; set; }
+        //public int custom { get; set; }
         public List<PrestaSharp.Entities.AuxEntities.language> value { get; set; }
 
         public product_feature_value()

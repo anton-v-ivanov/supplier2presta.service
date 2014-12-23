@@ -394,6 +394,9 @@ namespace RestSharp.Deserializers
 
 		protected virtual XElement GetElementByName(XElement root, XName name)
 		{
+		    if (root == null)
+		        return null;
+
 			var lowerName = name.LocalName.ToLower().AsNamespaced(name.NamespaceName);
 			var camelName = name.LocalName.ToCamelCase(Culture).AsNamespaced(name.NamespaceName);
 
