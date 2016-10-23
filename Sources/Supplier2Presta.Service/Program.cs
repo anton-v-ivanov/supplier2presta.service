@@ -2,10 +2,11 @@
 using System.Configuration;
 using System.Linq;
 using System.Collections.Generic;
-
+using System.IO;
 using NLog;
 using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Config;
+using Supplier2Presta.Service.Diffs;
 using Supplier2Presta.Service.Managers;
 using Supplier2Presta.Service.PriceItemBuilders;
 
@@ -53,12 +54,9 @@ namespace Supplier2Presta.Service
             var apiUrl = ConfigurationManager.AppSettings["api-url"];
             var apiAccessToken = ConfigurationManager.AppSettings["api-access-token"];
 
-            var colorsDictionary = new Dictionary<string, string>();
-            foreach (ColorMappingElement color in RobotSettings.Config.Colors)
-            {
-                colorsDictionary.Add(color.Name, color.Code);
-            }
-            
+            var colorsDictionary = RobotSettings.Config.Colors.Cast<ColorMappingElement>()
+                .ToDictionary(color => color.Name, color => color.Code);
+
             var colorCodeBuilder = new ColorBuilder(colorsDictionary);
 
             foreach (SupplierElement settings in RobotSettings.Config.Suppliers)
@@ -69,11 +67,37 @@ namespace Supplier2Presta.Service
 
                     Log.Info("Processing price: '{0}' Type: {1}", settings.Name, settings.PriceType);
 
-                    var result = priceManager.CheckUpdates(settings.PriceType, forceUpdate);
-                    if (result.Status != PriceUpdateResultStatus.Ok && result.Status != PriceUpdateResultStatus.ProcessAborted)
+                    var loadUpdatesResult = priceManager.LoadUpdates(settings.PriceType, forceUpdate);
+                    if (loadUpdatesResult.IsSuccess)
                     {
-                        Log.Info("Price update finished. ErrorCode: " + result);
-                        return Convert.ToInt32(result);
+                        Log.Debug("Building the diff");
+                        var diff = new Differ().GetDiff(loadUpdatesResult.NewPriceLoadResult.PriceItems, loadUpdatesResult.OldPriceLoadResult?.PriceItems);
+
+                        var result = priceManager.Process(diff, settings.PriceType);
+
+                        Log.Info($"{loadUpdatesResult.NewPriceLoadResult.PriceItems.Count} lines processed. {diff.UpdatedItems.Count} updated, {diff.NewItems.Count} added, {diff.DeletedItems.Count} deleted");
+
+                        if (result.Status != PriceUpdateResultStatus.Ok)
+                        {
+                            Log.Info("Price update finished. ErrorCode: " + result.Status);
+                            File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
+                            return Convert.ToInt32(result.Status);
+                        }
+
+                        if (diff.DeletedItems.Any() || diff.NewItems.Any() || diff.UpdatedItems.Any())
+                        {
+                            var file = Path.GetFileName(loadUpdatesResult.NewPriceLoadResult.FilePath);
+                            File.Move(loadUpdatesResult.NewPriceLoadResult.FilePath, Path.Combine(settings.ArchiveDirectory, file));
+                        }
+                        else
+                        {
+                            File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
+                        }
+                    }
+                    else
+                    {
+                        Log.Fatal("Unable to load new price");
+                        return Convert.ToInt32(PriceUpdateResultStatus.PriceLoadFail);
                     }
                 }
             }

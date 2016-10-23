@@ -1,38 +1,33 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Xml.Serialization;
-using NLog;
-using Supplier2Presta.Service.Config;
 using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Loaders;
 using Supplier2Presta.Service.PriceBuilders;
 
 namespace Supplier2Presta.Service.Managers
 {
-    public class HappinesCsvPriceManager : PriceManagerBase, IPriceManager
+    public class HappinesCsvPriceManager : PriceManagerBase
     {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        private readonly string _priceFormatFile;
+        private readonly string _priceEncoding;
 
-        public HappinesCsvPriceManager(SupplierElement settings, string archiveDirectory, IRetailPriceBuilder retailPriceBuilder, string apiUrl, string apiAccessToken)
-            : base(settings, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken)
+        public HappinesCsvPriceManager(string priceUrl, int discountValue, string archiveDirectory, IRetailPriceBuilder retailPriceBuilder, string apiUrl, string apiAccessToken, string priceFormatFile, string priceEncoding)
+            : base(priceUrl, discountValue, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken)
         {
+            _priceFormatFile = priceFormatFile;
+            _priceEncoding = priceEncoding;
         }
 
-        public PriceUpdateResult CheckUpdates(PriceType type, bool forceUpdate)
+        public override LoadUpdatesResult LoadUpdates(PriceType type, bool forceUpdate)
         {
-            var priceFormat = GetPriceFormat(Settings.PriceFormatFile);
+            var priceFormat = GetPriceFormat(_priceFormatFile);
             
-            var csvPriceLoader = new CsvPriceLoader(Settings.PriceEncoding, priceFormat);
+            var csvPriceLoader = new CsvPriceLoader(_priceEncoding, priceFormat);
             var newPriceLoader = new SingleFilePriceLoader(csvPriceLoader);
 
-            var newPriceLoadResult = newPriceLoader.Load<string>(Settings.Url);
+            var newPriceLoadResult = newPriceLoader.Load<string>(PriceUrl);
             
-            if (!newPriceLoadResult.Success)
-            {
-                Log.Fatal("Unable to load new price");
-                return new PriceUpdateResult(PriceUpdateResultStatus.PriceLoadFail);
-            }
-
             PriceLoadResult oldPriceLoadResult = null;
 
             if (!forceUpdate)
@@ -41,7 +36,7 @@ namespace Supplier2Presta.Service.Managers
                 oldPriceLoadResult = oldPriceLoader.Load<string>(ArchiveDirectory);
             }
 
-            return Process(newPriceLoadResult, oldPriceLoadResult, type);
+            return new LoadUpdatesResult(newPriceLoadResult, oldPriceLoadResult, newPriceLoadResult.Success);
         }
 
         private PriceFormat GetPriceFormat(string priceFormatFile)

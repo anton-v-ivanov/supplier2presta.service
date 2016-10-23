@@ -6,6 +6,7 @@
         PriceLoadFail = 1,
         InternalError = 500,
         ProcessAborted = 400,
+        PhotoLoadFailed = 404,
     }
 
     public class PriceUpdateResult

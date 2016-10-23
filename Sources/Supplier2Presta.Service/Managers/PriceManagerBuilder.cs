@@ -22,10 +22,10 @@ namespace Supplier2Presta.Service.Managers
             switch (Path.GetExtension(settings.Url))
             {
                 case ".xml":
-                    return new HappinesXmlPriceManager(settings, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken, colorCodeBuilder);
+                    return new HappinesXmlPriceManager(settings.Url, settings.Discount, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken, colorCodeBuilder);
                 
                 case ".csv":
-                    return new HappinesCsvPriceManager(settings, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken);
+                    return new HappinesCsvPriceManager(settings.Url, settings.Discount, archiveDirectory, retailPriceBuilder, apiUrl, apiAccessToken, settings.PriceFormatFile, settings.PriceEncoding);
 
                 default:
                     throw new ConfigurationErrorsException("There is no price manager for file with extension " + Path.GetExtension(settings.Url));

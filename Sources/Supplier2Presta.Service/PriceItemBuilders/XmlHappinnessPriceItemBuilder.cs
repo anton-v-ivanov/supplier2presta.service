@@ -53,13 +53,18 @@ namespace Supplier2Presta.Service.PriceItemBuilders
                             Reference = "200" + assort.Aid,
                         };
                     a.ColorCode = !string.IsNullOrWhiteSpace(a.Color) ? _colorCodeBuilder.GetCode(a.Color) : string.Empty;
+                    if (!string.IsNullOrWhiteSpace(a.Ean13))
+                    {
+                        a.Ean13 = _ean13Regex.Match(a.Ean13).Value;
+                    }
+
                     result.Assort.Add(a);
 	            }
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Ean13) && result.Ean13.Length > 13)
+            if (!string.IsNullOrWhiteSpace(result.Ean13))
             {
-                result.Ean13 = _ean13Regex.Match(result.Ean13).Value.Substring(0, 13);
+                result.Ean13 = _ean13Regex.Match(result.Ean13).Value;
             }
 
             if(fileItem.Category != null)
