@@ -39,10 +39,12 @@ namespace Supplier2Presta.Service.ShopApiProcessors
                 return;
             }
 
-            var product = ProductsMapper.Create(priceItem);
+			Log.Info("Adding product {0}", priceItem.Reference);
 
-            var category = _categoryProcessor.GetCategoryValue(priceItem);
-            product = ProductsMapper.MapCategory(product, category);
+			var product = ProductsMapper.Create(priceItem);
+
+			var categories = _categoryProcessor.GetCategories(priceItem);
+            product = ProductsMapper.MapCategories(product, categories);
 
             var supplier = _apiFactory.Suppliers.First(s => s.name.Equals(priceItem.SupplierName, StringComparison.CurrentCultureIgnoreCase));
             product = ProductsMapper.MapSupplier(product, supplier);

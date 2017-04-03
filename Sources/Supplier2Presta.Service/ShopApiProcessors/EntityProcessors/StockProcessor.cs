@@ -25,12 +25,12 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
             foreach (var assort in priceItem.Assort)
             {
                 var stock = GetStockValue(product, assort);
-                if (stock.quantity != assort.Balance)
-                {
-                    Log.Info("Balance changed from {0} to {1}. Reference: {2}", stock.quantity, assort.Balance, priceItem.Reference);
-                    stock.quantity = assort.Balance;
-                    _apiFactory.StockFactory.Update(stock);
-                }
+	            if (stock.quantity == assort.Balance)
+					continue;
+
+				stock.quantity = assort.Balance;
+	            _apiFactory.StockFactory.Update(stock);
+	            Log.Info("Balance changed from {0} to {1}. Reference: {2}", stock.quantity, assort.Balance, priceItem.Reference);
             }
         }
 

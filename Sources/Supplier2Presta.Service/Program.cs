@@ -12,98 +12,111 @@ using Supplier2Presta.Service.PriceItemBuilders;
 
 namespace Supplier2Presta.Service
 {
-    public class Program
-    {
-        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+	public class Program
+	{
+		private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        public static int Main(string[] args)
-        {
-            Log.Info("Price update started");
+		public static int Main(string[] args)
+		{
+			Log.Info("Price update started");
 
-            List<PriceType> updateTypes = new List<PriceType>();
-            var forceUpdate = false;
-            if (args != null)
-            {
-                forceUpdate = args.Any(s => s.Equals("force", StringComparison.OrdinalIgnoreCase));
-                var typeStr = args.FirstOrDefault(s => s.StartsWith("t:", StringComparison.OrdinalIgnoreCase));
-                if(!string.IsNullOrWhiteSpace(typeStr))
-                {
-                    var typesStr = typeStr.Replace("t:", string.Empty).Split(new []{','}, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var type in typesStr)
-	                {
-                        if(type.Equals("all", StringComparison.OrdinalIgnoreCase))
-                        {
-                            updateTypes.Clear();
-                            updateTypes.AddRange(Enum.GetValues(typeof(PriceType)).Cast<PriceType>());
-                            break;
-                        }
+			var updateTypes = new List<PriceType>();
+			List<string> debugReferences = null;
 
-                        var priceType = (PriceType)Enum.Parse(typeof(PriceType), type, true);
-                        if(!updateTypes.Contains(priceType))
-                            updateTypes.Add(priceType);
-	                }
-                }
-                else
-                {
-                    updateTypes.Add(PriceType.Stock);
-                }
-            }
+			var forceUpdate = false;
+			if (args != null)
+			{
+				forceUpdate = args.Any(s => s.Equals("force", StringComparison.OrdinalIgnoreCase));
+				var debugRefStr = args.FirstOrDefault(s => s.StartsWith("r:", StringComparison.OrdinalIgnoreCase));
+				if (!string.IsNullOrEmpty(debugRefStr))
+					debugReferences = debugRefStr.Replace("r:", string.Empty).Split(',').ToList();
 
-            Log.Info("Update price types: {0}", string.Join(",", updateTypes.ToArray()));
+				var typeStr = args.FirstOrDefault(s => s.StartsWith("t:", StringComparison.OrdinalIgnoreCase));
+				if (!string.IsNullOrWhiteSpace(typeStr))
+				{
+					var typesStr = typeStr.Replace("t:", string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+					foreach (var type in typesStr)
+					{
+						if (type.Equals("all", StringComparison.OrdinalIgnoreCase))
+						{
+							updateTypes.Clear();
+							updateTypes.AddRange(Enum.GetValues(typeof(PriceType)).Cast<PriceType>());
+							break;
+						}
 
-            var apiUrl = ConfigurationManager.AppSettings["api-url"];
-            var apiAccessToken = ConfigurationManager.AppSettings["api-access-token"];
+						var priceType = (PriceType)Enum.Parse(typeof(PriceType), type, true);
+						if (!updateTypes.Contains(priceType))
+							updateTypes.Add(priceType);
+					}
+				}
+				else
+				{
+					updateTypes.Add(PriceType.Stock);
+				}
+			}
 
-            var colorsDictionary = RobotSettings.Config.Colors.Cast<ColorMappingElement>()
-                .ToDictionary(color => color.Name, color => color.Code);
+			Log.Info("Update price types: {0}", string.Join(",", updateTypes.ToArray()));
 
-            var colorCodeBuilder = new ColorBuilder(colorsDictionary);
+			var apiUrl = ConfigurationManager.AppSettings["api-url"];
+			var apiAccessToken = ConfigurationManager.AppSettings["api-access-token"];
+			var ignoredProducts = RobotSettings.Config.IgnoredProducts.Cast<IgnoredProductElement>().Select(s => s.Reference).ToList();
 
-            foreach (SupplierElement settings in RobotSettings.Config.Suppliers)
-            {
-                if (updateTypes.Contains(settings.PriceType))
-                {
-                    var priceManager = PriceManagerBuilder.Build(settings, apiUrl, apiAccessToken, colorCodeBuilder);
+			var colorsDictionary = RobotSettings.Config.Colors.Cast<ColorMappingElement>()
+				.ToDictionary(color => color.Name, color => color.Code);
 
-                    Log.Info("Processing price: '{0}' Type: {1}", settings.Name, settings.PriceType);
+			var colorCodeBuilder = new ColorBuilder(colorsDictionary);
 
-                    var loadUpdatesResult = priceManager.LoadUpdates(settings.PriceType, forceUpdate);
-                    if (loadUpdatesResult.IsSuccess)
-                    {
-                        Log.Debug("Building the diff");
-                        var diff = new Differ().GetDiff(loadUpdatesResult.NewPriceLoadResult.PriceItems, loadUpdatesResult.OldPriceLoadResult?.PriceItems);
+			foreach (SupplierElement settings in RobotSettings.Config.Suppliers)
+			{
+				if (updateTypes.Contains(settings.PriceType))
+				{
+					var priceManager = PriceManagerBuilder.Build(settings, apiUrl, apiAccessToken, colorCodeBuilder);
 
-                        var result = priceManager.Process(diff, settings.PriceType);
+					Log.Info("Processing price: '{0}' Type: {1}", settings.Name, settings.PriceType);
 
-                        Log.Info($"{loadUpdatesResult.NewPriceLoadResult.PriceItems.Count} lines processed. {diff.UpdatedItems.Count} updated, {diff.NewItems.Count} added, {diff.DeletedItems.Count} deleted");
+					var loadUpdatesResult = priceManager.LoadUpdates(settings.PriceType, forceUpdate);
+					if (loadUpdatesResult.IsSuccess)
+					{
+						Log.Debug("Building the diff");
+						var diff = new Differ().GetDiff(loadUpdatesResult.NewPriceLoadResult.PriceItems, loadUpdatesResult.OldPriceLoadResult?.PriceItems, ignoredProducts);
+						if (debugReferences != null && debugReferences.Any())
+						{
+							diff.NewItems = diff.NewItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
+							diff.NewItems = diff.UpdatedItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
+							diff.NewItems = diff.DeletedItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
+						}
 
-                        if (result.Status != PriceUpdateResultStatus.Ok)
-                        {
-                            Log.Info("Price update finished. ErrorCode: " + result.Status);
-                            File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
-                            return Convert.ToInt32(result.Status);
-                        }
+						var result = priceManager.Process(diff, settings.PriceType);
 
-                        if (diff.DeletedItems.Any() || diff.NewItems.Any() || diff.UpdatedItems.Any())
-                        {
-                            var file = Path.GetFileName(loadUpdatesResult.NewPriceLoadResult.FilePath);
-                            File.Move(loadUpdatesResult.NewPriceLoadResult.FilePath, Path.Combine(settings.ArchiveDirectory, file));
-                        }
-                        else
-                        {
-                            File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
-                        }
-                    }
-                    else
-                    {
-                        Log.Fatal("Unable to load new price");
-                        return Convert.ToInt32(PriceUpdateResultStatus.PriceLoadFail);
-                    }
-                }
-            }
+						Log.Info($"{loadUpdatesResult.NewPriceLoadResult.PriceItems.Count} lines processed. {diff.UpdatedItems.Count} updated, {diff.NewItems.Count} added, {diff.DeletedItems.Count} deleted");
+
+						if (result.Status != PriceUpdateResultStatus.Ok)
+						{
+							Log.Info("Price update finished. ErrorCode: " + result.Status);
+							File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
+							return Convert.ToInt32(result.Status);
+						}
+
+						if (diff.DeletedItems.Any() || diff.NewItems.Any() || diff.UpdatedItems.Any())
+						{
+							var file = Path.GetFileName(loadUpdatesResult.NewPriceLoadResult.FilePath);
+							File.Move(loadUpdatesResult.NewPriceLoadResult.FilePath, Path.Combine(settings.ArchiveDirectory, file));
+						}
+						else
+						{
+							File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
+						}
+					}
+					else
+					{
+						Log.Fatal("Unable to load new price");
+						return Convert.ToInt32(PriceUpdateResultStatus.PriceLoadFail);
+					}
+				}
+			}
 
 			Log.Info("Price update finished successfully");
-            return Convert.ToInt32(PriceUpdateResultStatus.Ok);
-        }
-    }
+			return Convert.ToInt32(PriceUpdateResultStatus.Ok);
+		}
+	}
 }

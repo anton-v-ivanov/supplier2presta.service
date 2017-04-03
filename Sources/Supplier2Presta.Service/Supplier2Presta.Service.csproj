@@ -13,7 +13,8 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <PublishUrl>publish\</PublishUrl>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>d:\Projects\Supplier2Presta\publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -23,10 +24,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>1</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -55,12 +54,22 @@
     <ManifestKeyFile>Supplier2Presta.Service_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
+    <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Bukimedia.PrestaSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\Bukimedia.PrestaSharp.dll</HintPath>
+    </Reference>
     <Reference Include="LogentriesCore">
       <HintPath>..\..\packages\logentries.core.2.4.4\lib\net40\LogentriesCore.dll</HintPath>
     </Reference>
@@ -73,9 +82,14 @@
     <Reference Include="NLog">
       <HintPath>packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -83,6 +97,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\IgnoredProductElementCollection.cs" />
+    <Compile Include="Config\IgnoredProductElement.cs" />
     <Compile Include="Config\ColorMappingElement.cs" />
     <Compile Include="Config\ColorMappingElementCollection.cs" />
     <Compile Include="Config\MultiplicatorRuleElement.cs" />
@@ -95,6 +111,7 @@
     <Compile Include="Diffs\Differ.cs" />
     <Compile Include="Diffs\IDiffer.cs" />
     <Compile Include="Entities\Assort.cs" />
+    <Compile Include="Entities\CategoryInfo.cs" />
     <Compile Include="Entities\LoadUpdatesResult.cs" />
     <Compile Include="Entities\Exceptions\PhotoLoadException.cs" />
     <Compile Include="Entities\Exceptions\ProcessAbortedException.cs" />
@@ -107,7 +124,10 @@
     <Compile Include="Entities\PriceType.cs" />
     <Compile Include="Entities\PriceUpdateResult.cs" />
     <Compile Include="Entities\XmlPrice\StockXmlItemList.cs" />
+    <Compile Include="Entities\XmlPrice\XmlAssort.cs" />
+    <Compile Include="Entities\XmlPrice\XmlCategory.cs" />
     <Compile Include="Entities\XmlPrice\XmlItem.cs" />
+    <Compile Include="Entities\XmlPrice\XmlPriceInfo.cs" />
     <Compile Include="Helpers\Helpers.cs" />
     <Compile Include="Helpers\ProductsMapper.cs" />
     <Compile Include="Helpers\StringExtensions.cs" />
@@ -150,6 +170,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+    <None Include="Properties\app.manifest" />
     <None Include="Supplier2Presta.Service_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -172,16 +193,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <ProjectReference Include="..\PrestaSharp\PrestaSharp.csproj">
-      <Project>{3D494A24-06BA-475B-A158-162745683EC3}</Project>
-      <Name>PrestaSharp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RestSharp\RestSharp.csproj">
-      <Project>{2ECECFBF-5F3E-40EE-A963-72336DC7ABE2}</Project>
-      <Name>RestSharp</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
       <Visible>False</Visible>

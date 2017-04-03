@@ -86,9 +86,10 @@ namespace Supplier2Presta.Service.PriceItemBuilders
             result.Name = _priceFormat.Name > -1 ? columns[_priceFormat.Name].Value.Trim('"', ';').MakeSafeName() : string.Empty;
             result.SupplierName = "happiness";
             result.Reference = "200" + columns[_priceFormat.Reference].Value.Trim('"', ';');
-            var categories = GetCategoryName(columns);
-            result.RootCategory = categories.Item1;
-            result.Category = categories.Item2;
+
+			var categories = GetCategoryName(columns);
+			result.Categories.Add(new CategoryInfo(categories.Item1, categories.Item2));
+
             result.Active = _priceFormat.Active <= -1 || Convert.ToBoolean(Convert.ToInt32(columns[_priceFormat.Active].Value.Trim('"', ';')));
             result.Battery = _priceFormat.Battery > -1 ? columns[_priceFormat.Battery].Value.Trim('"', ';', ' ').FirstLetterToUpper().CapitalizeEnglish() : string.Empty;
             result.Weight = _priceFormat.Weight > -1 ? columns[_priceFormat.Weight].Value.Trim('"', ';') : string.Empty;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bukimedia.PrestaSharp.Entities;
 using Bukimedia.PrestaSharp.Entities.AuxEntities;
+using NLog;
 using Supplier2Presta.Service.Entities;
 using Supplier2Presta.Service.Helpers;
 using language = Bukimedia.PrestaSharp.Entities.AuxEntities.language;
@@ -14,8 +15,9 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
     internal class CombinationsProcessor
     {
         private readonly ShopApiFactory _apiFactory;
+		private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        public CombinationsProcessor(ShopApiFactory apiFactory)
+		public CombinationsProcessor(ShopApiFactory apiFactory)
         {
             _apiFactory = apiFactory;
         }
@@ -66,36 +68,34 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
             {
                 return CreateCombination(product, assort, sizeOptionValue, colorOptionValue, true);
             }
-            else
-            {
-                foreach (var combination in combinations)
-                {
-                    if (sizeOptionValue != null && colorOptionValue != null)
-                    {
-                        if (combination.associations.product_option_values.Exists(s => s.id == sizeOptionValue.id.Value) &&
-                            combination.associations.product_option_values.Exists(s => s.id == colorOptionValue.id.Value))
-                        {
-                            return CheckCombination(combination, assort, product);
-                        }
-                    }
-                    else if (colorOptionValue != null)
-                    {
-                        if (combination.associations.product_option_values.Exists(s => s.id == colorOptionValue.id.Value))
-                        {
-                            return CheckCombination(combination, assort, product);
-                        }
-                    }
-                    else if (sizeOptionValue != null)
-                    {
-                        if (combination.associations.product_option_values.Exists(s => s.id == sizeOptionValue.id.Value))
-                        {
-                            return CheckCombination(combination, assort, product);
-                        }
-                    }
-                }
 
-                return CreateCombination(product, assort, sizeOptionValue, colorOptionValue, false);
-            }
+	        foreach (var combination in combinations)
+	        {
+		        if (sizeOptionValue != null && colorOptionValue != null)
+		        {
+			        if (combination.associations.product_option_values.Exists(s => s.id == sizeOptionValue.id.Value) &&
+			            combination.associations.product_option_values.Exists(s => s.id == colorOptionValue.id.Value))
+			        {
+				        return CheckCombination(combination, assort, product);
+			        }
+		        }
+		        else if (colorOptionValue != null)
+		        {
+			        if (combination.associations.product_option_values.Exists(s => s.id == colorOptionValue.id.Value))
+			        {
+				        return CheckCombination(combination, assort, product);
+			        }
+		        }
+		        else
+		        {
+			        if (combination.associations.product_option_values.Exists(s => s.id == sizeOptionValue.id.Value))
+			        {
+				        return CheckCombination(combination, assort, product);
+			        }
+		        }
+	        }
+
+	        return CreateCombination(product, assort, sizeOptionValue, colorOptionValue, false);
         }
 
         private combination CheckCombination(combination combination, Assort assort, product product)
@@ -116,7 +116,7 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
 
         private combination CreateCombination(product product, Assort assort, product_option_value sizeOptionValue, product_option_value colorOptionValue, bool isDefault)
         {
-            var combination = new combination
+			var combination = new combination
             {
                 id_product = product.id,
                 reference = assort.Reference,
@@ -137,7 +137,14 @@ namespace Supplier2Presta.Service.ShopApiProcessors.EntityProcessors
 
             combination = _apiFactory.CombinationFactory.Add(combination);
             product = ProductsMapper.MapCombination(product, combination);
-            _apiFactory.ProductFactory.Update(product);
+
+			Log.Info("Combitation created. Size: {0}, Color: {1}. Product reference: {2}, Combination Reference: {3}",
+		        sizeOptionValue?.name[0].Value,
+		        colorOptionValue?.name[0].Value,
+		        product.reference,
+		        combination.reference);
+
+			_apiFactory.ProductFactory.Update(product);
             return combination;
         }
 

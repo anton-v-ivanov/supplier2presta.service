@@ -7,7 +7,7 @@ namespace Supplier2Presta.Service.Diffs
 {
     public class Differ : IDiffer
     {
-        public Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds)
+        public Diff GetDiff(Dictionary<string, PriceItem> newProds, Dictionary<string, PriceItem> oldProds, IEnumerable<string> ignoredProducts)
         {
             oldProds = oldProds ?? new Dictionary<string, PriceItem>();
 
@@ -22,7 +22,7 @@ namespace Supplier2Presta.Service.Diffs
             foreach (var item in diff.UpdatedItems.Values)
             {
                 var oldItem = oldProds[item.Reference];
-                if (item.WholesalePrice == oldItem.WholesalePrice && item.Active == oldItem.Active && !SameBalance(item, oldItem))
+                if (item.WholesalePrice.Equals(oldItem.WholesalePrice) && item.Active == oldItem.Active && !SameBalance(item, oldItem))
                 {
                     toRemove.Add(item.Reference);
                 }
@@ -33,7 +33,13 @@ namespace Supplier2Presta.Service.Diffs
                 diff.UpdatedItems.Remove(reference);
             }
 
-            return diff;
+			foreach (var ignoredProduct in ignoredProducts)
+			{
+				diff.NewItems.Remove(ignoredProduct);
+				diff.UpdatedItems.Remove(ignoredProduct);
+			}
+
+			return diff;
         }
 
         private bool SameBalance(PriceItem item, PriceItem oldItem)
