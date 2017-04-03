@@ -68,50 +68,50 @@ namespace Supplier2Presta.Service
 
 			foreach (SupplierElement settings in RobotSettings.Config.Suppliers)
 			{
-				if (updateTypes.Contains(settings.PriceType))
+				if (!updateTypes.Contains(settings.PriceType))
+					continue;
+
+				var priceManager = PriceManagerBuilder.Build(settings, apiUrl, apiAccessToken, colorCodeBuilder);
+
+				Log.Info("Processing price: '{0}' Type: {1}", settings.Name, settings.PriceType);
+
+				var loadUpdatesResult = priceManager.LoadUpdates(settings.PriceType, forceUpdate);
+				if (loadUpdatesResult.IsSuccess)
 				{
-					var priceManager = PriceManagerBuilder.Build(settings, apiUrl, apiAccessToken, colorCodeBuilder);
-
-					Log.Info("Processing price: '{0}' Type: {1}", settings.Name, settings.PriceType);
-
-					var loadUpdatesResult = priceManager.LoadUpdates(settings.PriceType, forceUpdate);
-					if (loadUpdatesResult.IsSuccess)
+					Log.Debug("Building the diff");
+					var diff = new Differ().GetDiff(loadUpdatesResult.NewPriceLoadResult.PriceItems, loadUpdatesResult.OldPriceLoadResult?.PriceItems, ignoredProducts);
+					if (debugReferences != null && debugReferences.Any())
 					{
-						Log.Debug("Building the diff");
-						var diff = new Differ().GetDiff(loadUpdatesResult.NewPriceLoadResult.PriceItems, loadUpdatesResult.OldPriceLoadResult?.PriceItems, ignoredProducts);
-						if (debugReferences != null && debugReferences.Any())
-						{
-							diff.NewItems = diff.NewItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
-							diff.NewItems = diff.UpdatedItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
-							diff.NewItems = diff.DeletedItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
-						}
+						diff.NewItems = diff.NewItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
+						diff.NewItems = diff.UpdatedItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
+						diff.NewItems = diff.DeletedItems.Where(s => debugReferences.Contains(s.Key)).ToDictionary(k => k.Key, pair => pair.Value);
+					}
 
-						var result = priceManager.Process(diff, settings.PriceType);
+					var result = priceManager.Process(diff, settings.PriceType);
 
-						Log.Info($"{loadUpdatesResult.NewPriceLoadResult.PriceItems.Count} lines processed. {diff.UpdatedItems.Count} updated, {diff.NewItems.Count} added, {diff.DeletedItems.Count} deleted");
+					Log.Info($"{loadUpdatesResult.NewPriceLoadResult.PriceItems.Count} lines processed. {diff.UpdatedItems.Count} updated, {diff.NewItems.Count} added, {diff.DeletedItems.Count} deleted");
 
-						if (result.Status != PriceUpdateResultStatus.Ok)
-						{
-							Log.Info("Price update finished. ErrorCode: " + result.Status);
-							File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
-							return Convert.ToInt32(result.Status);
-						}
+					if (result.Status != PriceUpdateResultStatus.Ok)
+					{
+						Log.Info("Price update finished. ErrorCode: " + result.Status);
+						File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
+						return Convert.ToInt32(result.Status);
+					}
 
-						if (diff.DeletedItems.Any() || diff.NewItems.Any() || diff.UpdatedItems.Any())
-						{
-							var file = Path.GetFileName(loadUpdatesResult.NewPriceLoadResult.FilePath);
-							File.Move(loadUpdatesResult.NewPriceLoadResult.FilePath, Path.Combine(settings.ArchiveDirectory, file));
-						}
-						else
-						{
-							File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
-						}
+					if (diff.DeletedItems.Any() || diff.NewItems.Any() || diff.UpdatedItems.Any())
+					{
+						var file = Path.GetFileName(loadUpdatesResult.NewPriceLoadResult.FilePath);
+						File.Move(loadUpdatesResult.NewPriceLoadResult.FilePath, Path.Combine(settings.ArchiveDirectory, file));
 					}
 					else
 					{
-						Log.Fatal("Unable to load new price");
-						return Convert.ToInt32(PriceUpdateResultStatus.PriceLoadFail);
+						File.Delete(loadUpdatesResult.NewPriceLoadResult.FilePath);
 					}
+				}
+				else
+				{
+					Log.Fatal("Unable to load new price");
+					return Convert.ToInt32(PriceUpdateResultStatus.PriceLoadFail);
 				}
 			}
 

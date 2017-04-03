@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Supplier2Presta.Service.Config;
 using Supplier2Presta.Service.Entities;
@@ -14,72 +15,103 @@ namespace Supplier2Presta.Service.PriceBuilders
 			_multiplicators = multiplicators;
 		}
 
-		public float Build(PriceItem priceItem)
+		public float GetRetailPrice(PriceItem priceItem)
 		{
-			float result;
+			float price;
 			var elements = _multiplicators.Cast<MultiplicatorRuleElement>().ToList();
 
+			var setByReferece = TrySetPriceByReference(elements, priceItem, out price);
+			if(!setByReferece)
+			{
+				var setByCategory = TrySetPriceByCategory(elements, priceItem, out price);
+				if(!setByCategory)
+				{
+					var setByMinMax = TrySetPriceByMinMax(elements, priceItem, out price);
+					if(!setByMinMax)
+					{
+						price = GetDefaultPrice(priceItem);
+					}
+				}
+			}
+
+			price = (float)Math.Ceiling(price);
+			return price;
+		}
+
+		private float GetDefaultPrice(PriceItem priceItem)
+		{
+			// 0 means leave supplier recommended price
+			if (_multiplicators.Default.Equals(0))
+			{
+				return priceItem.RetailPrice;
+			}
+
+			return priceItem.WholesalePrice * _multiplicators.Default;
+		}
+
+		private static bool TrySetPriceByMinMax(List<MultiplicatorRuleElement> elements, PriceItem priceItem, out float price)
+		{
+			var minMaxPriceElement = elements.FirstOrDefault(e => e.MinPrice <= priceItem.WholesalePrice && priceItem.WholesalePrice <= e.MaxPrice);
+			if (minMaxPriceElement != null)
+			{
+				// 0 means leave supplier recommended price
+				if (minMaxPriceElement.Value.Equals(0))
+				{
+					price = priceItem.RetailPrice;
+				}
+				else
+				{
+					price = priceItem.WholesalePrice * minMaxPriceElement.Value;
+				}
+				return true;
+			}
+			price = 0;
+			return false;
+		}
+
+		private static bool TrySetPriceByReference(List<MultiplicatorRuleElement> elements, PriceItem priceItem, out float price)
+		{
 			var referenceElement = elements.FirstOrDefault(e => e.ProductReference.Equals(priceItem.Reference, StringComparison.OrdinalIgnoreCase));
 			if (referenceElement != null)
 			{
 				// 0 means leave supplier recommended price
-				if (referenceElement.Value == 0)
+				if (referenceElement.Value.Equals(0))
 				{
-					result = priceItem.RetailPrice;
+					price = priceItem.RetailPrice;
 				}
 				else
 				{
-					result = priceItem.WholesalePrice * referenceElement.Value;
+					price = priceItem.WholesalePrice * referenceElement.Value;
 				}
+				return true;
 			}
-			else
+			price = 0;
+			return false;
+		}
+
+		private static bool TrySetPriceByCategory(List<MultiplicatorRuleElement> elements, PriceItem priceItem, out float price)
+		{
+			var category = priceItem.Categories.FirstOrDefault();
+			if (category != null)
 			{
-				var categoryElement = elements.FirstOrDefault(e => e.Category.Equals(priceItem.Categories[0].SubName, StringComparison.OrdinalIgnoreCase) || e.Category.Equals(priceItem.Categories[0].Name, StringComparison.OrdinalIgnoreCase));
+				var categoryElement = elements.FirstOrDefault(e => e.Category.Equals(category.SubName, StringComparison.OrdinalIgnoreCase) ||
+												 e.Category.Equals(priceItem.Categories[0].Name, StringComparison.OrdinalIgnoreCase));
 				if (categoryElement != null)
 				{
 					// 0 means leave supplier recommended price
-					if (categoryElement.Value == 0)
+					if (categoryElement.Value.Equals(0))
 					{
-						result = priceItem.RetailPrice;
+						price = priceItem.RetailPrice;
 					}
 					else
 					{
-						result = priceItem.WholesalePrice * categoryElement.Value;
+						price = priceItem.WholesalePrice * categoryElement.Value;
 					}
-
-				}
-				else
-				{
-					var minMaxPriceElement = elements.FirstOrDefault(e => e.MinPrice <= priceItem.WholesalePrice && priceItem.WholesalePrice <= e.MaxPrice);
-					if (minMaxPriceElement != null)
-					{
-						// 0 means leave supplier recommended price
-						if (minMaxPriceElement.Value == 0)
-						{
-							result = priceItem.RetailPrice;
-						}
-						else
-						{
-							result = priceItem.WholesalePrice * minMaxPriceElement.Value;
-						}
-					}
-					else
-					{
-						// 0 means leave supplier recommended price
-						if (_multiplicators.Default == 0)
-						{
-							result = priceItem.RetailPrice;
-						}
-						else
-						{
-							result = priceItem.WholesalePrice * _multiplicators.Default;
-						}
-					}
+					return true;
 				}
 			}
-
-			result = (float)Math.Ceiling(result);
-			return result;
+			price = 0;
+			return false;
 		}
 	}
 }

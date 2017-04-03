@@ -22,7 +22,7 @@ namespace Supplier2Presta.Service.Diffs
             foreach (var item in diff.UpdatedItems.Values)
             {
                 var oldItem = oldProds[item.Reference];
-                if (item.WholesalePrice.Equals(oldItem.WholesalePrice) && item.Active == oldItem.Active && !SameBalance(item, oldItem))
+                if (item.WholesalePrice.Equals(oldItem.WholesalePrice) && item.Active == oldItem.Active && SameBalance(item, oldItem))
                 {
                     toRemove.Add(item.Reference);
                 }
@@ -47,7 +47,7 @@ namespace Supplier2Presta.Service.Diffs
             foreach (var assort in item.Assort)
             {
                 var oldAssort = oldItem.Assort
-                    .FirstOrDefault(s => s.Size.Equals(assort.Size, StringComparison.OrdinalIgnoreCase) && 
+                    .FirstOrDefault(s => s.Size != null && s.Size.Equals(assort.Size, StringComparison.OrdinalIgnoreCase) && 
                         s.Color.Equals(assort.Color, StringComparison.OrdinalIgnoreCase));
                 
                 if(oldAssort != null && oldAssort.Balance != assort.Balance)

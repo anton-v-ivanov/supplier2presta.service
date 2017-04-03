@@ -54,7 +54,7 @@ namespace Supplier2Presta.Service.Managers
                 if (diff.NewItems.Any())
                 {
                     Log.Debug("Building retail prices for new items");
-                    diff.NewItems.Values.ToList().ForEach(p => p.RetailPrice = _retailPriceBuilder.Build(p));
+                    diff.NewItems.Values.ToList().ForEach(p => p.RetailPrice = _retailPriceBuilder.GetRetailPrice(p));
 
                     Log.Debug("Adding items");
                     processor.Process(diff.NewItems, GeneratedPriceType.NewItems, priceType);
@@ -63,7 +63,7 @@ namespace Supplier2Presta.Service.Managers
                 if (diff.UpdatedItems.Any())
                 {
                     Log.Debug("Building retail prices for updated items");
-                    diff.UpdatedItems.Values.ToList().ForEach(p => p.RetailPrice = _retailPriceBuilder.Build(p));
+                    diff.UpdatedItems.Values.ToList().ForEach(p => p.RetailPrice = _retailPriceBuilder.GetRetailPrice(p));
 
                     Log.Debug("Updating items");
                     processor.Process(diff.UpdatedItems, GeneratedPriceType.SameItems, priceType);

@@ -49,15 +49,18 @@ namespace Supplier2Presta.Service.Helpers
         public static string MakeSafeName(this string str)
         {
             //^<>;=#{}
-            return str
-                .Replace("^", "")
-                .Replace("<", "")
-                .Replace(">", "")
-                .Replace(";", " ")
-                .Replace("=", " ")
-                .Replace("#", "№")
-                .Replace("{", " ")
-                .Replace("}", " ");
+	        var result = str
+		        .Replace("^", "")
+		        .Replace("<", "")
+		        .Replace(">", "")
+		        .Replace(";", " ")
+		        .Replace("=", " ")
+		        .Replace("#", "№")
+		        .Replace("{", " ")
+		        .Replace("}", " ");
+	        if (result.Length > 128)
+		        result = result.Substring(0, 128);
+	        return result;
         }
 
         private static bool IsAllUpper(string input)
