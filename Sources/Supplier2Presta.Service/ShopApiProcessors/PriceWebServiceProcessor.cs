@@ -50,12 +50,11 @@ namespace Supplier2Presta.Service.ShopApiProcessors
 			Parallel.ForEach(priceItems, parallelOptions, kvp =>
 			{
 				Interlocked.Increment(ref currentCount);
+				Log.Info("Processing product {0} of {1}", currentCount, priceItems.Count);
 				var item = kvp.Value;
 
 				var filter = new Dictionary<string, string> { { "reference", item.Reference } };
 				var existingProd = _apiFactory.ProductFactory.GetByFilter(filter, null, null);
-
-				Log.Info("Processing product {0} of {1}", currentCount, priceItems.Count);
 
 				switch (generatedPriceType)
 				{

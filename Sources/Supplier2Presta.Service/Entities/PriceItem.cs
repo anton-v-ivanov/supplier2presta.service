@@ -56,6 +56,7 @@ namespace Supplier2Presta.Service.Entities
         {
             Assort = new List<Assort>();
             Photos = new List<string>();
+			Categories = new List<CategoryInfo>();
         }
     }
 }
