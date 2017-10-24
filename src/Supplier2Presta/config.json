@@ -1,19 +1,19 @@
 {
   "api": {
-    "url": "https://dirty-dreams.ru/api",
-    "access_token": "7N37TAQ1GIWNRG3EUVMQ665GHWKJWTFT"
+    "url": "https://shop/api",
+    "access_token": ""
   },
   "logentries": {
-    "token": "838df656-9d3e-4f9f-ad4a-e9605ef45036",
-    "account_key": "b5a2bd2a-4daf-457d-a56d-eefaec5bc0ba"
+    "token": "",
+    "account_key": ""
   },
 
   "suppliers": [
     {
-      "name": "happiness_stock",
-      "supplier": "Happiness",
+      "name": "stock",
+      "supplier": "supplier",
       "type": "Stock",
-      "url": "http://stripmag.ru/datafeed/p5s_full_stock.xml",
+      "url": "",
       "archiveDirectory": "archive",
       "encoding": "utf-8",
       "defaultMultiplicator": 1.3,
@@ -69,10 +69,10 @@
       ]
     },
     {
-      "name": "happiness_full",
-      "supplier": "Happiness",
+      "name": "full",
+      "supplier": "supplier",
       "type": "Full",
-      "url": "http://stripmag.ru/datafeed/p5s_full.xml",
+      "url": "",
       "archiveDirectory": "archive//full",
       "encoding": "utf-8",
       "formatFile": "happiness.xml",
@@ -129,10 +129,10 @@
       ]
     },
     {
-      "name": "happiness_supersale",
-      "supplier": "Happiness",
+      "name": "supersale",
+      "supplier": "supplier",
       "type": "Discount",
-      "url": "http://stripmag.ru/datafeed/p5s_sale.csv",
+      "url": "",
       "archiveDirectory": "archive//discount",
       "encoding": "utf-8",
       "formatFile": "happiness_sale.xml",
@@ -468,7 +468,7 @@
       },
       {
         "name": "Logentries",
-        "token": "160c39c0-98a1-4bdd-b300-24bd781da5e5"
+        "token": ""
       }
     ]
   }
