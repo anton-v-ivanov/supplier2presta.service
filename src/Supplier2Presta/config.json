@@ -1,0 +1,475 @@
+{
+  "api": {
+    "url": "https://dirty-dreams.ru/api",
+    "access_token": "7N37TAQ1GIWNRG3EUVMQ665GHWKJWTFT"
+  },
+  "logentries": {
+    "token": "838df656-9d3e-4f9f-ad4a-e9605ef45036",
+    "account_key": "b5a2bd2a-4daf-457d-a56d-eefaec5bc0ba"
+  },
+
+  "suppliers": [
+    {
+      "name": "happiness_stock",
+      "supplier": "Happiness",
+      "type": "Stock",
+      "url": "http://stripmag.ru/datafeed/p5s_full_stock.xml",
+      "archiveDirectory": "archive",
+      "encoding": "utf-8",
+      "defaultMultiplicator": 1.3,
+      "multiplicators": [
+        {
+          "name": "low-price",
+          "minPrice": 0,
+          "maxPrice": 499.99,
+          "value": 1.4
+        },
+        {
+          "name": "mid-price",
+          "minPrice": 500,
+          "maxPrice": 1499.99,
+          "value": 1.3
+        },
+        {
+          "name": "mid-high-price1",
+          "minPrice": 1500,
+          "maxPrice": 1999.99,
+          "value": 1.3
+        },
+        {
+          "name": "mid-high-price2",
+          "minPrice": 2000,
+          "maxPrice": 2999.99,
+          "value": 1.3
+        },
+        {
+          "name": "mid-high-price3",
+          "minPrice": 3000,
+          "maxPrice": 3499.99,
+          "value": 1.3
+        },
+        {
+          "name": "mid-high-price4",
+          "minPrice": 3500,
+          "maxPrice": 3999.99,
+          "value": 1.25
+        },
+        {
+          "name": "high-price1",
+          "minPrice": 4000,
+          "maxPrice": 9999.99,
+          "value": 1.2
+        },
+        {
+          "name": "high-price2",
+          "minPrice": 10000,
+          "maxPrice": 10000000,
+          "value": 1.15
+        }
+      ]
+    },
+    {
+      "name": "happiness_full",
+      "supplier": "Happiness",
+      "type": "Full",
+      "url": "http://stripmag.ru/datafeed/p5s_full.xml",
+      "archiveDirectory": "archive//full",
+      "encoding": "utf-8",
+      "formatFile": "happiness.xml",
+      "defaultMultiplicator": 1.3,
+      "multiplicators": [
+        {
+          "name": "low-price",
+          "minPrice": 0,
+          "maxPrice": 499.99,
+          "value": 1.4
+        },
+        {
+          "name": "mid-price",
+          "minPrice": 500,
+          "maxPrice": 1499.99,
+          "value": 1.3
+        },
+        {
+          "name": "mid-high-price1",
+          "minPrice": 1500,
+          "maxPrice": 1999.99,
+          "value": 1.3
+        },
+        {
+          "name": "mid-high-price2",
+          "minPrice": 2000,
+          "maxPrice": 2999.99,
+          "value": 1.3
+        },
+        {
+          "name": "mid-high-price3",
+          "minPrice": 3000,
+          "maxPrice": 3499.99,
+          "value": 1.3
+        },
+        {
+          "name": "mid-high-price4",
+          "minPrice": 3500,
+          "maxPrice": 3999.99,
+          "value": 1.25
+        },
+        {
+          "name": "high-price1",
+          "minPrice": 4000,
+          "maxPrice": 9999.99,
+          "value": 1.2
+        },
+        {
+          "name": "high-price2",
+          "minPrice": 10000,
+          "maxPrice": 10000000,
+          "value": 1.15
+        }
+      ]
+    },
+    {
+      "name": "happiness_supersale",
+      "supplier": "Happiness",
+      "type": "Discount",
+      "url": "http://stripmag.ru/datafeed/p5s_sale.csv",
+      "archiveDirectory": "archive//discount",
+      "encoding": "utf-8",
+      "formatFile": "happiness_sale.xml",
+      "defaultMultiplicator": 0,
+      "discount": 50
+    }
+  ],
+  "color_mappings": [
+    {
+      "name": "Телесный",
+      "code": "#eab292"
+    },
+    {
+      "name": "Леопард",
+      "code": "#DAA520"
+    },
+    {
+      "name": "Черный",
+      "code": "#000000"
+    },
+    {
+      "name": "Белый",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Фиолетовый",
+      "code": "#9400D3"
+    },
+    {
+      "name": "Красный",
+      "code": "#FF0000"
+    },
+    {
+      "name": "Розовый",
+      "code": "#FFC0CB"
+    },
+    {
+      "name": "Голубой",
+      "code": "#87CEEB"
+    },
+    {
+      "name": "Синий",
+      "code": "#0000FF"
+    },
+    {
+      "name": "Желтый",
+      "code": "#FFFF00"
+    },
+    {
+      "name": "Серебро",
+      "code": "#C0C0C0"
+    },
+    {
+      "name": "Зеленый",
+      "code": "#008000"
+    },
+    {
+      "name": "Оранжевый",
+      "code": "#FFA500"
+    },
+    {
+      "name": "Золотой",
+      "code": "#FFD700"
+    },
+    {
+      "name": "Шоколад",
+      "code": "#8B4513"
+    },
+    {
+      "name": "Аква",
+      "code": "#7FFFD4"
+    },
+    {
+      "name": "Серый",
+      "code": "#808080"
+    },
+    {
+      "name": "Коричневый",
+      "code": "#CD853F"
+    },
+    {
+      "name": "Лиловый",
+      "code": "#DA70D6"
+    },
+    {
+      "name": "Бежевый",
+      "code": "#F5F5DC"
+    },
+    {
+      "name": "Сиреневый",
+      "code": "#FF00FF"
+    },
+    {
+      "name": "Светло-зеленый",
+      "code": "#90EE90"
+    },
+    {
+      "name": "Бирюзовый",
+      "code": "#40E0D0"
+    },
+    {
+      "name": "Нежно-розовый",
+      "code": "#FFB6C1"
+    },
+    {
+      "name": "Малиновый",
+      "code": "#DC143C"
+    },
+    {
+      "name": "Ярко-розовый",
+      "code": "#FF69B4"
+    },
+    {
+      "name": "Молочный",
+      "code": "#FFFAFA"
+    },
+    {
+      "name": "Персиковый",
+      "code": "#FFDAB9"
+    },
+    {
+      "name": "Бордовый",
+      "code": "#B03060"
+    },
+    {
+      "name": "Салатовый",
+      "code": "#00FF00"
+    },
+    {
+      "name": "Сливовый",
+      "code": "#DDA0DD"
+    },
+    {
+      "name": "Изумрудный",
+      "code": "#2E8B57"
+    },
+    {
+      "name": "Лимонный",
+      "code": "#FFFACD"
+    },
+    {
+      "name": "Светло-фиолетовый",
+      "code": "#CD69C9"
+    },
+    {
+      "name": "Оливковый",
+      "code": "#808000"
+    },
+    {
+      "name": "Сиренево-розовый",
+      "code": "#CD6090"
+    },
+    {
+      "name": "Нежно голубой с белым",
+      "code": "#ADD8E6"
+    },
+    {
+      "name": "Хаки",
+      "code": "#BDB76B"
+    },
+    {
+      "name": "Жемчужный",
+      "code": "#9C9C9C"
+    },
+    {
+      "name": "Вишня",
+      "code": "#9B111E"
+    },
+    {
+      "name": "Темно-синий",
+      "code": "#00008B"
+    },
+    {
+      "name": "Клубника",
+      "code": "#FF6347"
+    },
+    {
+      "name": "Неоновый розовый",
+      "code": "#EE6AA7"
+    },
+    {
+      "name": "Лазурный",
+      "code": "#F0FFFF"
+    },
+    {
+      "name": "Черный с розовым",
+      "code": "#000000"
+    },
+    {
+      "name": "Черный с красным",
+      "code": "#000000"
+    },
+    {
+      "name": "Черный с золотым",
+      "code": "#000000"
+    },
+    {
+      "name": "Черный с бежевым",
+      "code": "#000000"
+    },
+    {
+      "name": "Черный с белым",
+      "code": "#000000"
+    },
+    {
+      "name": "Черный с фиолетовым",
+      "code": "#000000"
+    },
+    {
+      "name": "Черный с синим",
+      "code": "#000000"
+    },
+    {
+      "name": "Черный с бирюзовым",
+      "code": "#000000"
+    },
+    {
+      "name": "Белый с розовым",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Белый с голубым",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Белый с черным",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Белый с красным",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Розовый с черным",
+      "code": "#FFC0CB"
+    },
+    {
+      "name": "Прозрачный",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Разноцветный",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Дымчатый",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Взбитые сливки",
+      "code": "#FFFCF5"
+    },
+    {
+      "name": "Зебра",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Тигровый",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Металлик золото",
+      "code": "#D4AF37"
+    },
+    {
+      "name": "Сафари",
+      "code": "#CFA16A"
+    },
+    {
+      "name": "Розовая шотландка",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Темно-фиолетовый",
+      "code": "#9400D3"
+    },
+    {
+      "name": "Золото с черным",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Манго",
+      "code": "#FF8040"
+    },
+    {
+      "name": "Банан",
+      "code": "#FFE135"
+    },
+    {
+      "name": "Бронзовый",
+      "code": "#CD7F32"
+    },
+    {
+      "name": "Кофейный",
+      "code": "#CD7F32"
+    },
+    {
+      "name": "Серебристый с розовым",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Ежевичный",
+      "code": "#B52540"
+    },
+    {
+      "name": "Шотландка",
+      "code": "#FFFFFF"
+    },
+    {
+      "name": "Светло-бронзовый",
+      "code": "#d99f65"
+    },
+    {
+      "name": "Яблоко",
+      "code": "#9abf59"
+    },
+    {
+      "name": "Светло-серый",
+      "code": "#d3d3d3"
+    }
+  ],
+
+  "ignored_products": [ "20044412", "20053618", "20053621" ],
+
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.Literate", "Serilog.Sinks.RollingFile", "Serilog.Sinks.Logentries" ],
+    "MinimumLevel": "Information",
+    "WriteTo": [
+      { "name": "LiterateConsole" },
+      {
+        "name": "RollingFile",
+        "args": { "pathFormat": "./logs/{Date}.txt" }
+      },
+      {
+        "name": "Logentries",
+        "token": "160c39c0-98a1-4bdd-b300-24bd781da5e5"
+      }
+    ]
+  }
+}

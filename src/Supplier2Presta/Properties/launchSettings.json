@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Supplier2Presta": {
+      "commandName": "Project",
+      "commandLineArgs": "force t:Full"
+    }
+  }
+}
