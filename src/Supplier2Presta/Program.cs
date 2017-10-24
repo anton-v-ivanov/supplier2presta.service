@@ -17,6 +17,7 @@ namespace Supplier2Presta
 
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("./config.json", false)
+                .AddJsonFile("./config.real.json", true)
                 .Build();
 
             Log.Logger = new LoggerConfiguration()
